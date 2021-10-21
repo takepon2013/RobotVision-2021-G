@@ -25,7 +25,7 @@ for c in CLASSES:
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # リサイズ (H, W) = (56, 56) ※要調整
-        gray = cv2.resize(gray, (56, 56))
+        gray = cv2.resize(gray, (56, 84))
 
         # HOGによって特徴抽出
         feat = hog(gray)

@@ -102,7 +102,7 @@ while True:
         )
 
         # リサイズ (H, W) = (56, 56) ※要調整
-    gray = cv2.resize(gray, (56, 56))
+    gray = cv2.resize(gray, (56, 84))
 
     cv2.imshow("gray", gray)
         # HOGによって特徴抽出
