@@ -41,6 +41,8 @@ second_player = player.Player(background, True)
 player_group.add(first_player)
 player_group.add(second_player)
 
+player_group.update('')
+
 count = 0
 
 while not finish:
@@ -59,6 +61,7 @@ while not finish:
             second_bullet_group.add(new_bullet)
 
     for event in pygame.event.get():
+        print('event')
         if event.type == pygame.QUIT:
             finish = True
         elif event.type == pygame.KEYDOWN:
