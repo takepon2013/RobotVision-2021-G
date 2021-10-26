@@ -9,6 +9,9 @@ class Player(pygame.sprite.Sprite):
     background: pygame.Surface
     bullets: Dict[int, Bullet]
 
+    # プレイヤーのスコア
+    score: int = 0
+
     def __init__(self, background: pygame.Surface, fromRight: bool):
         pygame.sprite.Sprite.__init__(self)
         self.bullets = {}
