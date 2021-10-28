@@ -23,6 +23,7 @@ hantei = hantei_controller.HanteiController()
 
 while True:
     first_frame = first_cap.read()[1]
+    print(first_frame)
     second_frame = second_cap.read()[1]
     first_action_name = hantei.judge(first_frame)
     second_action_name = hantei.judge(second_frame)
@@ -47,7 +48,6 @@ while True:
     finish = game_screen.updateFrame(first_command, second_command)
     if finish:
         break
-
 
 first_cap.release()
 second_cap.release()
