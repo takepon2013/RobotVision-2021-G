@@ -4,7 +4,8 @@ from typing import Dict
 
 class Player(pygame.sprite.Sprite):
     # 0 ... gu, 1 ... tyoki, 2 ... pa
-    command: int = 1
+    command: int = -1
+    previous_command: int = -1
     fromRight: bool
     background: pygame.Surface
     bullets: Dict[int, Bullet]
@@ -62,3 +63,6 @@ class Player(pygame.sprite.Sprite):
         if bullet is None:
             return
         bullet.kill()
+
+    def can_action(self) -> bool:
+        return self.previous_command != self.command

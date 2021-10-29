@@ -1,25 +1,31 @@
 import threading
-import cv2
-import numpy as np
 import torch
 from torch.nn import Module
 from yolov5.models.experimental import Ensemble
-from yolov5.models.yolo import Model
 from yolov5.utils.plots import Annotator, colors
 from yolov5.utils.datasets import LoadStreams
 from typing import Union
 from yolov5.utils.torch_utils import time_sync
 from yolov5.utils.general import non_max_suppression, scale_coords
-from pathlib import Path
+
 
 # 判定の処理を行うクラス
 class HanteiController:
     model: Union[Module, Ensemble]
     input: Union[None, torch.Tensor] = None
-    command: str = '-1'
+    command: int = -1
+    thread: threading.Thread
 
     # streamType is same as index at VideoCapture(index)
     def __init__(self, streamType: int):
+        self.thread = threading.Thread(
+            target=self.execute,
+            args=([streamType]),
+            daemon=True
+        )
+        self.thread.start()
+
+    def execute(self, streamType: int):
         model = torch.hub.load('.', 'custom', autoshape=True, path='best.pt', source='local', device='cpu')
         model.conf = 0.5  # minimum confidence threshold
         # torch.cudnn.benchmark = True  # set True to speed up constant image size inference
@@ -28,7 +34,7 @@ class HanteiController:
         names = model.module.names if hasattr(model, 'module') else model.names  # get class names
 
         dt, seen = [0.0, 0.0, 0.0], 0
-        conf_thres = 0.2  # confidence threshold
+        conf_thres = 0.4  # confidence threshold
         iou_thres = 0.45  # NMS IOU threshold
         max_det = 1000  # maximum detections per image
         agnostic_nms = False
@@ -60,6 +66,8 @@ class HanteiController:
             dt[2] += time_sync() - t3
             print(pred)
 
+            command = ''
+
             # Process predictions
             for i, det in enumerate(pred):  # per image
                 seen += 1
@@ -79,16 +87,25 @@ class HanteiController:
                     # Write results
                     for *xyxy, conf, cls in reversed(det):
                         c = int(cls)  # integer class
+                        command = names[c]
                         label = f'{names[c]} {conf:.2f}'
                         annotator.box_label(xyxy, label, color=colors(c, True))
 
-                        # Print time (inference-only)
+                # Print time (inference-only)
                 print(f'{s}Done. ({t3 - t2:.3f}s)')
+                if command == 'goo':
+                    self.command = 0
+                elif command == 'choki':
+                    self.command = 1
+                elif command == 'par':
+                    self.command = 2
+                print(f'command: {self.command}')
 
-                # Stream results
-                im0 = annotator.result()
+                # # Stream results
+                # im0 = annotator.result()
+                #
+                # cv2.imshow(s, im0)
+                # cv2.waitKey(1)
+                # cv2.destroyWindow(s)
 
-                cv2.imshow(s, im0)
-                cv2.waitKey(5000)
-                cv2.destroyWindow(s)
 

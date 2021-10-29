@@ -13,12 +13,8 @@ class GameScreen:
     first_bullet_group: pygame.sprite.Group
     second_bullet_group: pygame.sprite.Group
     player_group: pygame.sprite.Group
-    count: int
 
-    def __init__(self, firstCap: cv2.VideoCapture):
-        # キャプチャの情報
-        cap_width = firstCap.get(cv2.CAP_PROP_FRAME_WIDTH)
-        cap_height = firstCap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    def __init__(self, cap_width: int, cap_height: int):
 
         # スクリーンとバックグランドの設定
         self.screen = pygame.display.set_mode((int(cap_width), int(cap_height)))
@@ -39,10 +35,8 @@ class GameScreen:
         self.player_group.add(self.first_player)
         self.player_group.add(self.second_player)
 
+        # キーボードの入力キーがないので空文字を渡している
         self.player_group.update('')
-
-        self.count = 0
-
 
     def updateFrame(self, first_command: int, second_command: int) -> bool:
         self.first_player.command = first_command
@@ -51,10 +45,10 @@ class GameScreen:
         self.first_bullet_group.clear(self.screen, self.background)
         self.second_bullet_group.clear(self.screen, self.background)
 
-        if self.first_player.command == 1:
+        if self.first_player.can_action() and self.first_player.command == 1:
             new_bullet = self.first_player.generate_bullet()
             self.first_bullet_group.add(new_bullet)
-        if self.second_player.command == 1:
+        if self.second_player.can_action() and self.second_player.command == 1:
             new_bullet = self.second_player.generate_bullet()
             self.second_bullet_group.add(new_bullet)
 
@@ -76,7 +70,5 @@ class GameScreen:
         self.player_group.draw(self.screen)
 
         pygame.display.flip()
-
-        self.count += 1
 
         return self.finish
