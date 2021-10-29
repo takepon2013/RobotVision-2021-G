@@ -21,13 +21,16 @@ second_cap = cv2.VideoCapture(1)
 game_screen = game_screen.GameScreen(first_cap)
 hantei = hantei_controller.HanteiController()
 
+count = 0
+
 while True:
+    count += 1
+    if count % 1000 != 0:
+        continue
     first_frame = first_cap.read()[1]
-    print(first_frame)
     second_frame = second_cap.read()[1]
     first_action_name = hantei.judge(first_frame)
     second_action_name = hantei.judge(second_frame)
-    print(first_action_name, second_action_name)
     first_command = 1
     if first_action_name == 'rock':
         first_command = 0
