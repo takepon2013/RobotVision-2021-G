@@ -22,16 +22,15 @@ pygame.init()
 game_width = 1280
 game_height = 480
 
-cap = cv2.VideoCapture(1)
-
+game_center_y = 240
 
 # スクリーンとバックグランドの設定
 screen = pygame.display.set_mode((int(game_width), int(game_height)))
 background = pygame.image.load('./assets/bg.png')
 background = pygame.transform.scale(
-    background, (int(cap_width), int(cap_height)))
+    background, (int(game_width), int(game_height)))
 screen.blit(background, (0, 0))
-print((int(cap_width), int(cap_height)))
+print((int(game_width), int(game_height)))
 finish = False
 
 # プレイヤーと弾丸の設定
@@ -53,8 +52,14 @@ count = 0
 Clockclock = pygame.time.Clock()
 
 # yolov5 detectをスレッドで起動
-detecting = threading.Thread(target=detect.run, kwargs={
-                             'source': 0, 'weights': 'C:/Users/takep/Documents/RobotVision-2021-G/yolo_take/runs/train/Deeplearning-result3/weights/best.pt', 'imgsz': 240})
+detecting = threading.Thread(
+    target=detect.run,
+    kwargs={
+        'source': 1,
+        'weights': 'yolo_take/runs/train/Deeplearning-result3/weights/best.pt',
+        'imgsz': 240
+    }
+)
 detecting.start()
 
 while not finish:
@@ -78,11 +83,11 @@ while not finish:
     firstplayerhand = detecttxt1.read()
     detecttxt1.close()
 
-    if (firstplayerhand == 'goo'):
+    if firstplayerhand == 'goo':
         first_player.command = 0
-    elif (firstplayerhand == 'choki'):
+    elif firstplayerhand == 'choki':
         first_player.command = 1
-    elif (firstplayerhand == 'par'):
+    elif firstplayerhand == 'par':
         first_player.command = 2
 
     # ユーザー入力
@@ -94,22 +99,20 @@ while not finish:
 
 # テキストデータから　座標受け取って移動　First player
     detecttxt2 = open('zahyou.txt', 'r')
-    firstplayerzahyou = detecttxt2.read()
+    # プレイヤーのy座標の比率（0~1）
+    height_ratio = detecttxt2.read()
     detecttxt2.close()
 
-    if (firstplayerzahyou == ''):
+    if height_ratio == '':
         yolozayhou = yolozahyou
     else:
-        ichizi = float(firstplayerzahyou)
-        yolozahyou = int(ichizi)
+        # 感度をあげている
+        height_ratio = float(height_ratio)
+        yolozahyou = int(game_height * height_ratio * 1.7)
 
-        # このよくわかんないやつらは　感度をあげている
-        yolozahyou = yolozahyou - 240
-        ichizi2 = float(yolozahyou) * 1.7142
-        yolozahyou = 240 + int(ichizi2)
-        if(yolozahyou < 0):
+        if yolozahyou < 0:
             yolozahyou = 0
-        if(yolozahyou > 480):
+        if yolozahyou > 480:
             yolozahyou = 480
 
     first_player.update(yolozahyou)
@@ -129,6 +132,6 @@ while not finish:
 
     Clockclock.tick(60)
 
-
+cv2.destroyAllWindows()
 pygame.quit()
 sys.exit()
