@@ -231,10 +231,11 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                             f.write(('%g ' * len(line)).rstrip() % line + '\n')
                     zahyou = torch.tensor(xyxy).tolist()
                     
-                    print((zahyou[1] + zahyou[3]) / 2)
                     if (Player1 == True):
                        tex1 = open('zahyou.txt', 'w')
-                       tex1.write(str((zahyou[1] + zahyou[3]) / 2))
+                       cap_height = im0.shape[0]
+                       normalized_height = (zahyou[1] + zahyou[3] / 2) / cap_height
+                       tex1.write(str(normalized_height))
                        tex1.close()
 
                        
