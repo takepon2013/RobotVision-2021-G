@@ -1,0 +1,1 @@
+python detectorigin.py --source 0 --weight C:\Users\takep\Documents\RobotVision-2021-G\yolo_take\runs\train\Deeplearning-result3\weights\best.pt --imgsz 480 --save-txt

@@ -2,6 +2,7 @@ import pygame
 from bullet import Bullet
 from typing import Dict
 
+
 class Player(pygame.sprite.Sprite):
     # 0 ... gu, 1 ... tyoki, 2 ... pa
     command: int = 1
@@ -11,41 +12,48 @@ class Player(pygame.sprite.Sprite):
 
     # プレイヤーのスコア
     score: int = 0
+    playerpos: int = 240
 
     def __init__(self, background: pygame.Surface, fromRight: bool):
         pygame.sprite.Sprite.__init__(self)
         self.bullets = {}
         self.background = background
-        self.image = pygame.image.load('./assets/player.png')
-        center_y_for_ball = (background.get_height() - self.image.get_height()) // 2
-        center_x_for_ball = (background.get_width() - self.image.get_width()) if fromRight else 0
-        self.rect = pygame.Rect(center_x_for_ball, center_y_for_ball, self.image.get_width(), self.image.get_height())
+        if(fromRight == False):
+            self.image = pygame.image.load('./assets/pl1choki.png')
+        else:
+            self.image = pygame.image.load('./assets/pl2choki.png')
+        center_y_for_ball = (background.get_height() -
+                             self.image.get_height()) // 2
+        center_x_for_ball = (background.get_width() -
+                             self.image.get_width()) if fromRight else 0
+        self.rect = pygame.Rect(center_x_for_ball, center_y_for_ball,
+                                self.image.get_width(), self.image.get_height())
         self.fromRight = fromRight
 
-    def update(self, key: str):
-        if not self.fromRight:
-            if key == ord('s'):
-                print("s is pressed")
-                self.rect.move_ip(0, 30)
-                # 画面からはみ出ないようにする
-                self.rect = self.rect.clamp(self.background.get_rect())
-            elif key == ord('w'):
-                print("w is pressed")
-                self.rect.move_ip(0, -30)
-                # 画面からはみ出ないようにする
-                self.rect = self.rect.clamp(self.background.get_rect())
+    def update(self, yolopos: int):
 
-        else:
-            if key == pygame.K_DOWN:
-                print("arrow-down is pressed")
-                self.rect.move_ip(0, 30)
-                # 画面からはみ出ないようにする
-                self.rect = self.rect.clamp(self.background.get_rect())
-            elif key == pygame.K_UP:
-                print("arrow-up is pressed")
-                self.rect.move_ip(0, -30)
-                # 画面からはみ出ないようにする
-                self.rect = self.rect.clamp(self.background.get_rect())
+        moving = yolopos - self.playerpos
+
+        self.rect.move_ip(0, moving)
+        # 画面からはみ出ないようにする
+        self.playerpos = yolopos
+        self.rect = self.rect.clamp(self.background.get_rect())
+
+        if (self.command == 0):
+            if(self.fromRight == False):
+                self.image = pygame.image.load('./assets/pl1goo.png')
+            else:
+                self.image = pygame.image.load('./assets/pl2goo.png')
+        if (self.command == 1):
+            if(self.fromRight == False):
+                self.image = pygame.image.load('./assets/pl1choki.png')
+            else:
+                self.image = pygame.image.load('./assets/pl2choki.png')
+        if (self.command == 2):
+            if(self.fromRight == False):
+                self.image = pygame.image.load('./assets/pl1choki.png')
+            else:
+                self.image = pygame.image.load('./assets/pl2choki.png')
 
     # シュートする
     def generate_bullet(self) -> Bullet:
@@ -53,7 +61,7 @@ class Player(pygame.sprite.Sprite):
         if self.command != 1:
             print("contradictory to own command")
             return None
-        bullet = Bullet(self.fromRight, self.rect.y, self.rect.x)
+        bullet = Bullet(self.fromRight, self.rect.y + 15, self.rect.x)
         self.bullets[self.rect.y] = bullet
         return bullet
 

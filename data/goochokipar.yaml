@@ -1,0 +1,11 @@
+# GooChokiPar dataset
+
+# train and val data as 1) directory: path/images/, 2) file: path/images.txt, or 3) list: [path1/images/, path2/images/]
+train: C:\Users\takep\Documents\RobotVision-2021-G\data\RabelImgdata
+val: C:\Users\takep\Documents\RobotVision-2021-G\data\RabelImgdata
+
+# number of classes
+nc: 18
+
+# class names
+names: ['dog', 'person', 'cat', 'tv', 'car', 'meatballs', 'marinara sauce', 'tomato soup', 'chicken noodle soup', 'french onion soup', 'chicken breast', 'ribs', 'pulled pork', 'hamburger', 'cavity', 'goo', 'choki', 'par']
