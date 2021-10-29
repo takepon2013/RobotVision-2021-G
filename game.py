@@ -19,7 +19,8 @@ first_cap = cv2.VideoCapture(1)
 second_cap = cv2.VideoCapture(1)
 
 game_screen = game_screen.GameScreen(first_cap)
-hantei = hantei_controller.HanteiController()
+first_hantei = hantei_controller.HanteiController(1)
+second_hantei = hantei_controller.HanteiController(1)
 
 count = 0
 
@@ -29,9 +30,9 @@ while True:
         continue
     first_frame = first_cap.read()[1]
     second_frame = second_cap.read()[1]
-    first_action_name = hantei.judge(first_frame)
-    second_action_name = hantei.judge(second_frame)
-    first_command = 1
+    first_action_name = first_hantei.command
+    second_action_name = second_hantei.command
+    first_command = -1
     if first_action_name == 'rock':
         first_command = 0
     elif first_action_name == 'scissors':
@@ -39,7 +40,7 @@ while True:
     elif first_action_name == 'paper':
         first_command = 2
 
-    second_command = 1
+    second_command = -1
 
     if second_action_name == 'rock':
         second_command = 0
