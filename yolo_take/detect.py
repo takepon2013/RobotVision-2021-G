@@ -234,7 +234,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                     if (Player1 == True):
                        tex1 = open('zahyou.txt', 'w')
                        cap_height = im0.shape[0]
-                       normalized_height = (zahyou[1] + zahyou[3] / 2) / cap_height
+                       normalized_height = ((zahyou[1] + zahyou[3]) / 2) / cap_height
                        tex1.write(str(normalized_height))
                        tex1.close()
 
@@ -242,7 +242,9 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                        
                     if (Player1 == False):
                         tex1 = open('zahyou1.txt', 'w')
-                        tex1.write(str((zahyou[1] + zahyou[3]) / 2))
+                        cap_height = im0.shape[0]
+                        normalized_height = ((zahyou[1] + zahyou[3]) / 2) / cap_height
+                        tex1.write(str(normalized_height))
                         tex1.close()
 
 
