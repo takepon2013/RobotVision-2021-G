@@ -8,11 +8,14 @@ Usage:
 
 import argparse
 import os
+import platform
 import sys
 from pathlib import Path
+from events import first_display_event_type, second_display_event_type
 
 import cv2
 import numpy as np
+import pygame.event
 import torch
 import torch.backends.cudnn as cudnn
 
@@ -60,7 +63,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
         dnn=False,  # use OpenCV DNN for ONNX inference
         Player1=True
         ):
-    
+
     hand = 'null'
     source = str(source)
     save_img = not nosave and not source.endswith('.txt')  # save inference images
@@ -123,7 +126,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
 
     # Dataloader
     if webcam:
-        view_img = check_imshow()
+        view_img = True
         cudnn.benchmark = True  # set True to speed up constant image size inference
         dataset = LoadStreams(source, img_size=imgsz, stride=stride, auto=pt)
         bs = len(dataset)  # batch_size
@@ -133,7 +136,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
     vid_path, vid_writer = [None] * bs, [None] * bs
 
     # Run inference
-    
+
     dt, seen = [0.0, 0.0, 0.0], 0
     for path, img, im0s, vid_cap in dataset:
         t1 = time_sync()
@@ -210,17 +213,17 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
                 # Print results
-                
+
                 iii = 0
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
-                    
+
                     if (iii == 0):
                         hand = names[int(c)]
-                    
+
                     iii = 1
-                    
+
 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
@@ -230,7 +233,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                         with open(txt_path + '.txt', 'a') as f:
                             f.write(('%g ' * len(line)).rstrip() % line + '\n')
                     zahyou = torch.tensor(xyxy).tolist()
-                    
+
                     if (Player1 == True):
                        tex1 = open('zahyou.txt', 'w')
                        cap_height = im0.shape[0]
@@ -238,8 +241,8 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                        tex1.write(str(normalized_height))
                        tex1.close()
 
-                       
-                       
+
+
                     if (Player1 == False):
                         tex1 = open('zahyou1.txt', 'w')
                         cap_height = im0.shape[0]
@@ -261,20 +264,26 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                tex = open('out.txt', 'w')
                tex.write(str(hand))
                tex.close()
-               
-               
+
+
             if (Player1 == False):
                 tex = open('out1.txt', 'w')
                 tex.write(str(hand))
                 tex.close()
 
-            
+
 
             # Stream results
             im0 = annotator.result()
             if view_img:
-                cv2.imshow(str(p), im0)
-                cv2.waitKey(1)  # 1 millisecond
+                # macosの場合はメインスレッドに処理を委譲する
+                if platform.system() == 'Darwin':
+                    event_type = first_display_event_type if Player1 else second_display_event_type
+                    e = pygame.event.Event(event_type, dict={'image': im0, 'window_name': str(p)})
+                    pygame.event.post(e)
+                else:
+                    cv2.imshow(str(p), im0)
+                    cv2.waitKey(1)  # 1 millisecond
 
             # Save results (image with detections)
             if save_img:
@@ -285,10 +294,10 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                         vid_path[i] = save_path
                         if isinstance(vid_writer[i], cv2.VideoWriter):
                             vid_writer[i].release()  # release previous video writer
-                        
-                            
-                            
-                        
+
+
+
+
 
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
