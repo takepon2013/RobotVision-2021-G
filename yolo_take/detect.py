@@ -7,6 +7,7 @@ Usage:
 """
 
 import argparse
+import multiprocessing
 import os
 import sys
 from pathlib import Path
@@ -27,6 +28,7 @@ from utils.datasets import LoadImages, LoadStreams
 from utils.general import apply_classifier, check_img_size, check_imshow, check_requirements, check_suffix, colorstr, \
     increment_path, non_max_suppression, print_args, save_one_box, scale_coords, set_logging, \
     strip_optimizer, xyxy2xywh
+
 from utils.plots import Annotator, colors
 from utils.torch_utils import load_classifier, select_device, time_sync
 
@@ -58,7 +60,8 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
         hide_conf=False,  # hide confidences
         half=False,  # use FP16 half-precision inference
         dnn=False,  # use OpenCV DNN for ONNX inference
-        Player1=True
+        Player1=True,
+        queue=multiprocessing.Queue()
         ):
     
     hand = 'null'
@@ -123,7 +126,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
 
     # Dataloader
     if webcam:
-        view_img = check_imshow()
+        view_img = True
         cudnn.benchmark = True  # set True to speed up constant image size inference
         dataset = LoadStreams(source, img_size=imgsz, stride=stride, auto=pt)
         bs = len(dataset)  # batch_size
@@ -261,20 +264,19 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                tex = open('out.txt', 'w')
                tex.write(str(hand))
                tex.close()
-               
-               
+
+
             if (Player1 == False):
                 tex = open('out1.txt', 'w')
                 tex.write(str(hand))
                 tex.close()
 
-            
+
 
             # Stream results
             im0 = annotator.result()
             if view_img:
-                cv2.imshow(str(p), im0)
-                cv2.waitKey(1)  # 1 millisecond
+                queue.put((str(p), im0))
 
             # Save results (image with detections)
             if save_img:
@@ -285,10 +287,10 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                         vid_path[i] = save_path
                         if isinstance(vid_writer[i], cv2.VideoWriter):
                             vid_writer[i].release()  # release previous video writer
-                        
-                            
-                            
-                        
+
+
+
+
 
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
