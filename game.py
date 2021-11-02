@@ -12,6 +12,14 @@ import player
 from gauge import Gauge
 from yolo_take import detect
 import threading
+import multiprocessing
+import cv2
+
+
+def display_camera(name, frame):
+    cv2.imshow(name, frame)
+    cv2.waitKey(1)  # 1 millisecond
+
 
 # gameの初期化
 pygame.init()
@@ -95,16 +103,21 @@ count = 0
 
 Clockclock = pygame.time.Clock()
 
+
+q = multiprocessing.Queue()
+
 # yolov5 detectをスレッドで起動
 detecting = threading.Thread(
     target=detect.run,
     kwargs={
-        'source': 0,
+        'source': 1,
         'weights': 'yolo_take/runs/train/Deeplearning-result3/weights/best.pt',
-        'imgsz': 240
+        'imgsz': 240,
+        'queue': q
     }
 )
 detecting.start()
+
 
 while not finish:
 
@@ -306,6 +319,12 @@ while not finish:
     first_beam_group.draw(screen)
     second_beam_group.draw(screen)
     player_group.draw(screen)
+
+    try:
+        (window_name, im0) = q.get(timeout=1)
+        display_camera(window_name, im0)
+    except:
+        pass
 
     pygame.display.flip()
 
