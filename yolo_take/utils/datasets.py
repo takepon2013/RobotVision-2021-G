@@ -280,6 +280,9 @@ class LoadWebcam:  # for inference
 
 
 class LoadStreams:
+
+    should_stop = False
+
     # YOLOv5 streamloader, i.e. `python detect.py --source 'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP streams`
     def __init__(self, sources='streams.txt', img_size=640, stride=32, auto=True):
         self.mode = 'stream'
@@ -327,6 +330,9 @@ class LoadStreams:
         # Read stream `i` frames in daemon thread
         n, f, read = 0, self.frames[i], 1  # frame number, frame array, inference every 'read' frame
         while cap.isOpened() and n < f:
+            if self.should_stop:
+                cap.release()
+                return
             n += 1
             # _, self.imgs[index] = cap.read()
             cap.grab()

@@ -112,7 +112,8 @@ class Player(pygame.sprite.Sprite):
         self.bullets[self.rect.y] = bullet
         return bullet
     # ビームがどかん！
-    def generate_beam(self) -> Beam:
+    def generate_beam\
+                    (self) -> Beam:
         # コマンドがparの場合のみ行う
         if (self.command == 2) and (sum(self.par_tame) >= 130) and (self.par_tame[0] == 1) and (self.gauge >= 100):
             

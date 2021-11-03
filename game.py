@@ -9,6 +9,7 @@ import sys
 
 import pygame
 import player
+import color_game
 from gauge import Gauge
 from yolo_take import detect
 import threading
@@ -96,10 +97,11 @@ count = 0
 Clockclock = pygame.time.Clock()
 
 # yolov5 detectをスレッドで起動
+first_detector = detect.Detector()
 first_detecting = threading.Thread(
-    target=detect.run,
+    target=first_detector.run,
     kwargs={
-        'source': 0,
+        'source': 1,
         'weights': 'yolo_take/runs/train/Deeplearning-result3/weights/best.pt',
         'imgsz': 240
     }
@@ -107,8 +109,9 @@ first_detecting = threading.Thread(
 first_detecting.start()
 
 # yolov5 detectをスレッドで起動
+second_detector = detect.Detector()
 second_detecting = threading.Thread(
-    target=detect.run,
+    target=second_detector.run,
     kwargs={
         'source': 1,
         'weights': 'yolo_take/runs/train/Deeplearning-result3/weights/best.pt',
@@ -322,8 +325,20 @@ while not finish:
 
     Clockclock.tick(60)
 
-    if (count > 7230):
-        finnish = True
+    if count > 72:
+        finish = True
+
+first_detector.release()
+second_detector.release()
+
+
+bonus_game_finsihed = False
+
+color_game = color_game.ColorGame()
+
+# ボーナスゲーム
+while not bonus_game_finsihed:
+    color_game.update()
 
 pygame.quit()
 sys.exit()
