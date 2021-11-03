@@ -12,14 +12,8 @@ import player
 from gauge import Gauge
 from yolo_take import detect
 import threading
-import multiprocessing
 import cv2
-
-
-def display_camera(name, frame):
-    cv2.imshow(name, frame)
-    cv2.waitKey(1)  # 1 millisecond
-
+from events import first_display_event_type, second_display_event_type
 
 # gameの初期化
 pygame.init()
@@ -42,7 +36,7 @@ second_par_count = 0
 screen = pygame.display.set_mode((int(game_width), int(game_height)))
 background = pygame.image.load('./assets/bg.png')
 background = pygame.transform.scale(
-    background, (int(game_width), int(game_height)-100))
+    background, (int(game_width), int(game_height) - 100))
 
 scoreboard = pygame.image.load('./assets/scoreboard.png')
 scoreboard = pygame.transform.scale(
@@ -52,17 +46,16 @@ screen.blit(scoreboard, (0, 480))
 print((int(game_width), int(game_height)))
 finish = False
 
-
-#ゲージの描画
+# ゲージの描画
 
 p1_gauge = Gauge(False)
 p2_gauge = Gauge(True)
 
- #フォントの設定
- 
+# フォントの設定
+
 font = pygame.font.Font(None, 70)
 
-#テキストファイルの初期化
+# テキストファイルの初期化
 texs = open('out.txt', 'w')
 texs.write('goo')
 texs.close()
@@ -76,7 +69,6 @@ texs.close()
 texs = open('zahyou1.txt', 'w')
 texs.write('0.5')
 texs.close()
-
 
 # プレイヤーと弾丸の設定
 player_group = pygame.sprite.Group()
@@ -98,26 +90,34 @@ gauge_group.add(p2_gauge)
 
 player_group.update(240)
 yolozahyou = 240
+yolozahyou2 = 240
 
 count = 0
 
 Clockclock = pygame.time.Clock()
 
-
-q = multiprocessing.Queue()
+# yolov5 detectをスレッドで起動
+first_detecting = threading.Thread(
+    target=detect.run,
+    kwargs={
+        'source': 0,
+        'weights': 'yolo_take/runs/train/Deeplearning-result3/weights/last.pt',
+        'imgsz': 240
+    }
+)
+first_detecting.start()
 
 # yolov5 detectをスレッドで起動
-detecting = threading.Thread(
+second_detecting = threading.Thread(
     target=detect.run,
     kwargs={
         'source': 1,
-        'weights': 'yolo_take/runs/train/Deeplearning-result3/weights/best.pt',
+        'weights': 'yolo_take/runs/train/Deeplearning-result3/weights/last.pt',
         'imgsz': 240,
-        'queue': q
+        'Player1': False
     }
 )
-detecting.start()
-
+second_detecting.start()
 
 while not finish:
 
@@ -135,17 +135,16 @@ while not finish:
         if second_player.command == 1:
             new_bullet = second_player.generate_bullet()
             second_bullet_group.add(new_bullet)
-        
-
-        
-        
-        
 
     # 手の形の判断
 
     detecttxt1 = open('out.txt', 'r')
     firstplayerhand = detecttxt1.read()
     detecttxt1.close()
+
+    detect_text2 = open('out1.txt', 'r')
+    second_player_command = detect_text2.read()
+    detect_text2.close()
 
     if firstplayerhand == 'goo':
         first_player.command = 0
@@ -154,14 +153,31 @@ while not finish:
     elif firstplayerhand == 'par':
         first_player.command = 2
 
+    if second_player_command == 'goo':
+        second_player.command = 0
+    elif second_player_command == 'choki':
+        second_player.command = 1
+    elif second_player_command == 'par':
+        second_player.command = 2
+
     # ユーザー入力
     for event in pygame.event.get():
         # print('event')
         if event.type == pygame.QUIT:
             finish = True
+        elif event.type == first_display_event_type:
+            window_name = event.dict['dict']['window_name']
+            im0 = event.dict['dict']['image']
+            cv2.imshow(window_name, im0)
+            cv2.waitKey(1)  # 1 millisecond
+        elif event.type == second_display_event_type:
+            window_name = event.dict['dict']['window_name']
+            im0 = event.dict['dict']['image']
+            cv2.imshow(window_name, im0)
+            cv2.waitKey(1)  # 1 millisecond
 
 
-# テキストデータから　座標受け取って移動　First player
+    # テキストデータから　座標受け取って移動　First player
     detecttxt2 = open('zahyou.txt', 'r')
     # プレイヤーのy座標の比率（0~1）
     height_ratio = detecttxt2.read()
@@ -173,29 +189,51 @@ while not finish:
         # 感度をあげている
         height_ratio2 = float(height_ratio)
         height_ratio2 = height_ratio2 - 0.5
-        
+
         # 感度を上げる具体的な数値height_ratio * n　でn倍の感度になる
         height_ratio2 = height_ratio2 * 3.0
-        
-        
-        
-        yolozahyou = int(((game_height-180)/2/0.5) * height_ratio2 + ((game_height-180)/2))
+
+        yolozahyou = int(((game_height - 180) / 2 / 0.5) * height_ratio2 + ((game_height - 180) / 2))
 
         if yolozahyou < 0:
             yolozahyou = 0
         if yolozahyou > 400:
             yolozahyou = 400
             
-   # 必殺ゲージに関する処理
+                # テキストデータから　座標受け取って移動　First player
+    detecttxt2 = open('zahyou1.txt', 'r')
+    # プレイヤーのy座標の比率（0~1）
+    height_ratio = detecttxt2.read()
+    detecttxt2.close()
+
+    if height_ratio == '':
+        yolozayhou2 = yolozahyou2
+    else:
+        # 感度をあげている
+        height_ratio2 = float(height_ratio)
+        height_ratio2 = height_ratio2 - 0.5
+
+        # 感度を上げる具体的な数値height_ratio * n　でn倍の感度になる
+        height_ratio2 = height_ratio2 * 3.0
+
+        yolozahyou2 = int(((game_height - 180) / 2 / 0.5) * height_ratio2 + ((game_height - 180) / 2))
+
+        if yolozahyou2 < 0:
+            yolozahyou2 = 0
+        if yolozahyou2 > 400:
+            yolozahyou2 = 400
+
+
+    # 必殺ゲージに関する処理
     if count % 20 == 0:
-       first_player.gauge += 1
-       second_player.gauge += 1
-    
+        first_player.gauge += 1
+        second_player.gauge += 1
+
     if first_player.gauge > 100:
         first_player.gauge = 100
     if second_player.gauge > 100:
         second_player.gauge = 100
-        
+
     if first_player.command == 2:
         new_beam = first_player.generate_beam()
         if new_beam != None:
@@ -207,139 +245,114 @@ while not finish:
             second_beam_group.add(new_beam)
             second_par_count = 0
 
+    # スコアボードに記載
 
- # スコアボードに記載
- 
     first_player_score = font.render("Score :" + str(first_player.score), True, (50, 50, 255))
     second_player_score = font.render("Score :" + str(second_player.score), True, (255, 50, 50))
     countdown = font.render(str(int(120 - (count / 60))), True, (200, 150, 0))
-    
+
     screen.blit(scoreboard, (0, 480))
     screen.blit(first_player_score, (50, 505))
     screen.blit(second_player_score, (1010, 505))
     screen.blit(countdown, (600, 505))
-    
 
-   
-   
-   
-   
     # 衝突判定
     first_colid = pygame.sprite.spritecollide(first_player, second_bullet_group, True)
-    
+
     if first_colid != []:
         if first_player.command == 0:
-            
             second_player.gauge += 5
-            
+
         if first_player.command == 1:
-            
-            
             second_player.score += choki_damage
             second_player.gauge += 3
-            
+
         if first_player.command == 2:
-            
+
             if first_player.gauge >= 100:
                 second_player.score += choki_damage * 3
                 first_player.gauge = 0
             else:
                 second_player.score += choki_damage
-    
+
     second_colid = pygame.sprite.spritecollide(second_player, first_bullet_group, True)
-    
+
     if second_colid != []:
         if second_player.command == 0:
-            
             first_player.gauge += 5
-            
+
         if second_player.command == 1:
-            
-            
             first_player.score += choki_damage
             first_player.gauge += 3
-            
+
         if second_player.command == 2:
-            
+
             if second_player.gauge >= 100:
                 first_player.score += choki_damage * 3
                 second_player.gauge = 0
             else:
                 first_player.score += choki_damage
 
-    first_par_colid = pygame.sprite.spritecollide(first_player, second_beam_group, False)
-    second_par_colid = pygame.sprite.spritecollide(second_player, first_beam_group, False)
     
-    if first_par_colid != []:
-        if second_player.par_cooldown > 240:
-            second_player.score += par_damage
-            second_player.par_cooldown = 0
+    second_par_colid = pygame.sprite.spritecollide(second_player, first_beam_group, False)
+
+    if first_player.par_cooldown > 240:
+        first_par_colid = pygame.sprite.spritecollide(first_player, second_beam_group, False)
         
-    if second_par_colid != []:
-        if first_player.par_cooldown > 240:
-            first_player.score += par_damage
+        if first_par_colid != []:
+        
+            second_player.score += par_damage
             first_player.par_cooldown = 0
 
+    if second_player.par_cooldown > 240:
+        if second_par_colid != []:
+        
+            first_player.score += par_damage
+            second_player.par_cooldown = 0
 
-
-
-
-   # プレイヤー全体のアップデート　大事！
+    # プレイヤー全体のアップデート　大事！
     first_player.update(yolozahyou)
-    second_player.update(200)
-
-
+    second_player.update(yolozahyou2)
 
     first_bullet_group.update()
     second_bullet_group.update()
-    
-   
-    
-    if first_par_count > 180 :
+
+    if first_par_count > 180:
         first_beam_group.update(True)
     else:
-       first_beam_group.update(False)  
-       
-    if second_par_count > 180 :
+        first_beam_group.update(False)
+
+    if second_par_count > 180:
         second_beam_group.update(True)
-        
+
     else:
-        second_beam_group.update(False)  
-       
-        
+        second_beam_group.update(False)
+
     p1_gauge.update(first_player.gauge)
     p2_gauge.update(second_player.gauge)
-    
-    gauge_group.draw(screen)
 
+    gauge_group.draw(screen)
 
     first_bullet_group.draw(screen)
     second_bullet_group.draw(screen)
-    
+
     first_beam_group.draw(screen)
     second_beam_group.draw(screen)
     player_group.draw(screen)
-
-    try:
-        (window_name, im0) = q.get(timeout=1)
-        display_camera(window_name, im0)
-    except:
-        pass
 
     pygame.display.flip()
 
     count += 1
     first_par_count += 1
     second_par_count += 1
-    #クールダウンタイムの経過
+    # クールダウンタイムの経過
     first_player.par_cooldown += 1
     second_player.par_cooldown += 1
 
     Clockclock.tick(60)
-    
-    if (count > 7230):
-        finnish = True
 
+    if (count > 7230):
+        finish = True
 
 pygame.quit()
 sys.exit()

@@ -41,7 +41,7 @@ class Player(pygame.sprite.Sprite):
         self.fromRight = fromRight
         
         if self.fromRight == True:
-            self.rchosei = 10
+            self.rchosei = -1201
         else:
             self.rchosei = 60
 
