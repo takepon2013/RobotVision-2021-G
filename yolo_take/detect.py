@@ -7,13 +7,15 @@ Usage:
 """
 
 import argparse
-import multiprocessing
 import os
+import platform
 import sys
 from pathlib import Path
+from events import first_display_event_type, second_display_event_type
 
 import cv2
 import numpy as np
+import pygame.event
 import torch
 import torch.backends.cudnn as cudnn
 
@@ -28,7 +30,6 @@ from utils.datasets import LoadImages, LoadStreams
 from utils.general import apply_classifier, check_img_size, check_imshow, check_requirements, check_suffix, colorstr, \
     increment_path, non_max_suppression, print_args, save_one_box, scale_coords, set_logging, \
     strip_optimizer, xyxy2xywh
-
 from utils.plots import Annotator, colors
 from utils.torch_utils import load_classifier, select_device, time_sync
 
@@ -60,10 +61,9 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
         hide_conf=False,  # hide confidences
         half=False,  # use FP16 half-precision inference
         dnn=False,  # use OpenCV DNN for ONNX inference
-        Player1=True,
-        queue=multiprocessing.Queue()
+        Player1=True
         ):
-    
+
     hand = 'null'
     source = str(source)
     save_img = not nosave and not source.endswith('.txt')  # save inference images
@@ -136,7 +136,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
     vid_path, vid_writer = [None] * bs, [None] * bs
 
     # Run inference
-    
+
     dt, seen = [0.0, 0.0, 0.0], 0
     for path, img, im0s, vid_cap in dataset:
         t1 = time_sync()
@@ -213,17 +213,17 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
                 # Print results
-                
+
                 iii = 0
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
-                    
+
                     if (iii == 0):
                         hand = names[int(c)]
-                    
+
                     iii = 1
-                    
+
 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
@@ -233,7 +233,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                         with open(txt_path + '.txt', 'a') as f:
                             f.write(('%g ' * len(line)).rstrip() % line + '\n')
                     zahyou = torch.tensor(xyxy).tolist()
-                    
+
                     if (Player1 == True):
                        tex1 = open('zahyou.txt', 'w')
                        cap_height = im0.shape[0]
@@ -241,8 +241,8 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                        tex1.write(str(normalized_height))
                        tex1.close()
 
-                       
-                       
+
+
                     if (Player1 == False):
                         tex1 = open('zahyou1.txt', 'w')
                         cap_height = im0.shape[0]
@@ -276,7 +276,14 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
             # Stream results
             im0 = annotator.result()
             if view_img:
-                queue.put((str(p), im0))
+                # macosの場合はメインスレッドに処理を委譲する
+                if platform.system() == 'Darwin':
+                    event_type = first_display_event_type if Player1 else second_display_event_type
+                    e = pygame.event.Event(event_type, dict={'image': im0, 'window_name': str(p)})
+                    pygame.event.post(e)
+                else:
+                    cv2.imshow(str(p), im0)
+                    cv2.waitKey(1)  # 1 millisecond
 
             # Save results (image with detections)
             if save_img:
