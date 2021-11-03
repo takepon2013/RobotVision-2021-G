@@ -7,6 +7,7 @@ Created on Thu Oct 21 15:55:35 2021
 """
 import sys
 
+import numpy as np
 import pygame
 import player
 import color_game
@@ -178,7 +179,6 @@ while not finish:
             cv2.imshow(window_name, im0)
             cv2.waitKey(1)  # 1 millisecond
 
-
     # テキストデータから　座標受け取って移動　First player
     detecttxt2 = open('zahyou.txt', 'r')
     # プレイヤーのy座標の比率（0~1）
@@ -325,20 +325,49 @@ while not finish:
 
     Clockclock.tick(60)
 
-    if count > 72:
+    if count > 720:
         finish = True
 
 first_detector.release()
 second_detector.release()
 
+cv2.destroyAllWindows()
+# 画面を真っ暗にする
+screen.fill((0, 0, 0))
 
-bonus_game_finsihed = False
+player_group.clear(screen, background)
+first_bullet_group.clear(screen, background)
+second_bullet_group.clear(screen, background)
+first_beam_group.clear(screen, background)
+second_beam_group.clear(screen, background)
 
-color_game = color_game.ColorGame()
+pygame.display.flip()
+
+pygame.display.set_caption('ボーナスゲーム！')
+
+
+def on_update_color_game(bonus_first_score: int, bonus_second_score: int, count: int):
+    first_total = bonus_first_score + first_player.score
+    second_total = bonus_second_score + second_player.score
+
+    first_surface = font.render("Score :" + str(first_total), True, (50, 50, 255))
+    second_surface = font.render("Score :" + str(second_total), True, (255, 50, 50))
+    countdown_surface = font.render(str(int(10 - (count / 60))), True, (200, 150, 0))
+
+    screen.blit(scoreboard, (0, 480))
+    screen.blit(first_surface, (50, 505))
+    screen.blit(second_surface, (980, 505))
+    screen.blit(countdown_surface, (600, 505))
+
+    pygame.display.update()
+
 
 # ボーナスゲーム
-while not bonus_game_finsihed:
-    color_game.update()
+color_game = color_game.ColorGame(
+    screen,
+    on_update=on_update_color_game
+)
 
+pygame.display.quit()
 pygame.quit()
 sys.exit()

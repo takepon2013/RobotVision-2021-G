@@ -88,15 +88,14 @@ class Detector:
         check_suffix(w, suffixes)  # check weights have acceptable suffix
         pt, onnx, tflite, pb, saved_model = (suffix == x for x in suffixes)  # backend booleans
         stride, names = 64, [f'class{i}' for i in range(1000)]  # assign defaults
-        if pt:
-            model = torch.jit.load(w) if 'torchscript' in w else attempt_load(weights, map_location=device)
-            stride = int(model.stride.max())  # model stride
-            names = model.module.names if hasattr(model, 'module') else model.names  # get class names
-            if half:
-                model.half()  # to FP16
-            if classify:  # second-stage classifier
-                modelc = load_classifier(name='resnet50', n=2)  # initialize
-                modelc.load_state_dict(torch.load('resnet50.pt', map_location=device)['model']).to(device).eval()
+        model = torch.jit.load(w) if 'torchscript' in w else attempt_load(weights, map_location=device)
+        stride = int(model.stride.max())  # model stride
+        names = model.module.names if hasattr(model, 'module') else model.names  # get class names
+        if half:
+            model.half()  # to FP16
+        if classify:  # second-stage classifier
+            modelc = load_classifier(name='resnet50', n=2)  # initialize
+            modelc.load_state_dict(torch.load('resnet50.pt', map_location=device)['model']).to(device).eval()
         imgsz = check_img_size(imgsz, s=stride)  # check image size
 
         view_img = True
@@ -121,9 +120,8 @@ class Detector:
             dt[0] += t2 - t1
 
             # Inference
-            if pt:
-                visualize = increment_path(save_dir / Path(path).stem, mkdir=True) if visualize else False
-                pred = model(img, augment=augment, visualize=visualize)[0]
+            visualize = increment_path(save_dir / Path(path).stem, mkdir=True) if visualize else False
+            pred = model(img, augment=augment, visualize=visualize)[0]
             t3 = time_sync()
             dt[1] += t3 - t2
 
@@ -230,7 +228,7 @@ class Detector:
 
         # Print results
         t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
-        print(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
+        # print(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
         if save_txt or save_img:
             s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
             print(f"Results saved to {colorstr('bold', save_dir)}{s}")
