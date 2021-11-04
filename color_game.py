@@ -44,14 +44,14 @@ class ColorGame:
     color_lower_2: np.ndarray
     color_upper_2: np.ndarray
 
-    def __init__(self, screen: pygame.Surface, on_update: Callable[[int, int, int], None]):
+    def __init__(self):
         self.stream1 = LoadStreams(sources='0', img_size=240)
         self.stream2 = LoadStreams(sources='1', img_size=240)
         self.width1 = self.stream1.imgs[0].shape[1]
         self.height1 = self.stream1.imgs[0].shape[0]
         self.width2 = self.stream2.imgs[0].shape[1]
         self.height2 = self.stream2.imgs[0].shape[0]
-
+        
         lower_random_hue_1, upper_random_hue_1 = self.generate_hue_color()
         self.color_upper_1 = np.array(upper_random_hue_1)
         self.color_lower_1 = np.array(lower_random_hue_1)
@@ -60,6 +60,8 @@ class ColorGame:
         self.color_upper_2 = np.array(upper_random_hue_2)
         self.color_lower_2 = np.array(lower_random_hue_2)
 
+
+    def start(self, screen: pygame.Surface, on_update: Callable[[int, int, int], None]):
         # 繰り返しの読み込み
         for first, second in zip(self.stream1, self.stream2):
             self.count -= 1

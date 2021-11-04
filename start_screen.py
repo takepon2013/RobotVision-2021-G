@@ -14,7 +14,7 @@ def s(screen: pygame.Surface, first_color: (int, int, int), second_color: (int, 
     countdown_surface = font.render(str((count // 60)), True, (200, 150, 0))
     
     pygame.draw.circle(screen, first_color, (300, 240), 60)
-    
+    pygame.draw.circle(screen, second_color, (900, 240), 60)
 
     screen.blit(scoreboard, (0, 480))
     screen.blit(first_surface, (50, 505))
@@ -24,6 +24,8 @@ def s(screen: pygame.Surface, first_color: (int, int, int), second_color: (int, 
     print(first_total, second_total)
 
     pygame.display.update()
+    
+
 
 def show_wait_screen(screen: pygame.Surface, color_game.color_lower_1, color_game.color_upper_1, color_game.color_lower_2, color_game.color_upper_2):
     font = pygame.font.Font(None, 70)
