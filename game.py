@@ -351,7 +351,7 @@ while not finish:
 
     Clockclock.tick(60)
 
-    if (count > 7230):
+    if (count > 72300):
         finish = True
 
 pygame.quit()

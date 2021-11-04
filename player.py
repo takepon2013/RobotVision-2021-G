@@ -6,7 +6,7 @@ from typing import Dict
 
 class Player(pygame.sprite.Sprite):
     # 0 ... gu, 1 ... tyoki, 2 ... pa
-    command: int = 1
+    command: int = 0
     fromRight: bool
     background: pygame.Surface
     bullets: Dict[int, Bullet]
@@ -37,7 +37,7 @@ class Player(pygame.sprite.Sprite):
         center_x_for_ball = (background.get_width() -
                              self.image.get_width()) if fromRight else 0
         self.rect = pygame.Rect(center_x_for_ball, center_y_for_ball,
-                                self.image.get_width() - 10, self.image.get_height() - 20)
+                                self.image.get_width() - 10, self.image.get_height() - 30)
         self.fromRight = fromRight
         
         if self.fromRight == True:
