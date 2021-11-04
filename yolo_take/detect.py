@@ -34,7 +34,6 @@ from utils.plots import Annotator, colors
 from utils.torch_utils import load_classifier, select_device, time_sync
 
 
-
 @torch.no_grad()
 def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
         source=ROOT / 'data/images',  # file/dir/URL/glob, 0 for webcam
@@ -126,7 +125,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
 
     # Dataloader
     if webcam:
-        view_img = True
+        view_img = check_imshow()
         cudnn.benchmark = True  # set True to speed up constant image size inference
         dataset = LoadStreams(source, img_size=imgsz, stride=stride, auto=pt)
         bs = len(dataset)  # batch_size
@@ -264,14 +263,14 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                tex = open('out.txt', 'w')
                tex.write(str(hand))
                tex.close()
-
-
+               
+               
             if (Player1 == False):
                 tex = open('out1.txt', 'w')
                 tex.write(str(hand))
                 tex.close()
 
-
+            
 
             # Stream results
             im0 = annotator.result()
@@ -294,10 +293,10 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                         vid_path[i] = save_path
                         if isinstance(vid_writer[i], cv2.VideoWriter):
                             vid_writer[i].release()  # release previous video writer
-
-
-
-
+                        
+                            
+                            
+                        
 
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image

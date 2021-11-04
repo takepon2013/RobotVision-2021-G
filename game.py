@@ -15,6 +15,7 @@ import threading
 import cv2
 from events import first_display_event_type, second_display_event_type
 
+
 # gameの初期化
 pygame.init()
 
@@ -95,6 +96,7 @@ yolozahyou2 = 240
 count = 0
 
 Clockclock = pygame.time.Clock()
+
 
 # yolov5 detectをスレッドで起動
 first_detecting = threading.Thread(
