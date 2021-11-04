@@ -374,7 +374,10 @@ pygame.display.flip()
 pygame.display.set_caption('ボーナスゲーム！')
 
 
-start_screen.show_wait_screen(screen)
+# ボーナスゲーム
+color_game = color_game.ColorGame()
+
+start_screen.show_wait_screen(screen, color_game.color_lower_1, color_game.color_upper_1, color_game.color_lower_2, color_game.color_upper_2)
 
 
 # 画面を真っ暗にする
@@ -398,11 +401,8 @@ def on_update_color_game(bonus_first_score: int, bonus_second_score: int, count:
     pygame.display.update()
 
 
-# ボーナスゲーム
-color_game = color_game.ColorGame(
-    screen,
-    on_update=on_update_color_game
-)
+color_game.start(screen, on_update_color_game)
+
 
 pygame.display.quit()
 pygame.quit()
