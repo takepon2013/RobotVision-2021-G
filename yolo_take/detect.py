@@ -35,8 +35,7 @@ from utils.torch_utils import load_classifier, select_device, time_sync
 
 
 class Detector:
-    finish: bool = False
-    vid_writer = []
+    
     dataset: LoadStreams
 
     @torch.no_grad()
@@ -65,7 +64,7 @@ class Detector:
             hide_conf=False,  # hide confidences
             half=False,  # use FP16 half-precision inference
             Player1=True,
-            ):
+            ) :
 
         hand = 'null'
         source = str(source)
@@ -101,10 +100,9 @@ class Detector:
         view_img = True
         cudnn.benchmark = True  # set True to speed up constant image size inference
         dataset = LoadStreams(source, img_size=imgsz, stride=stride, auto=pt)
+        self.dataset = dataset
         bs = len(dataset)  # batch_size
         vid_path, vid_writer = [None] * bs, [None] * bs
-
-        self.dataset = dataset
 
         # Run inference
 
@@ -214,7 +212,9 @@ class Detector:
                         pygame.event.post(e)
                     else:
                         cv2.imshow(str(p), im0)
-                        cv2.waitKey(1)  # 1 millisecond
+                        key = cv2.waitKey(1)  # 1 millisecond
+                        if key == ord('q'):
+                            break
 
                 # Save results (image with detections)
                 if save_img:
@@ -225,6 +225,9 @@ class Detector:
                             vid_path[i] = save_path
                             if isinstance(vid_writer[i], cv2.VideoWriter):
                                 vid_writer[i].release()  # release previous video writer
+        
+        
+
 
         # Print results
         t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
@@ -234,9 +237,3 @@ class Detector:
             print(f"Results saved to {colorstr('bold', save_dir)}{s}")
         if update:
             strip_optimizer(weights)  # update model (to fix SourceChangeWarning)
-
-    def release(self):
-        for w in self.vid_writer:
-            if isinstance(w, cv2.VideoWriter):
-                w.release()
-        self.dataset.capture.release()

@@ -17,6 +17,7 @@ from yolo_take import detect
 import threading
 import cv2
 from events import first_display_event_type, second_display_event_type
+import start_screen
 
 # gameの初期化
 pygame.init()
@@ -44,8 +45,7 @@ background = pygame.transform.scale(
 scoreboard = pygame.image.load('./assets/scoreboard.png')
 scoreboard = pygame.transform.scale(
     scoreboard, (int(game_width), 100))
-screen.blit(background, (0, 0))
-screen.blit(scoreboard, (0, 480))
+
 print((int(game_width), int(game_height)))
 finish = False
 
@@ -127,6 +127,11 @@ second_detecting = threading.Thread(
 )
 second_detecting.start()
 
+start_screen.show_start_screen(screen)
+
+screen.blit(background, (0, 0))
+screen.blit(scoreboard, (0, 480))
+
 while not finish:
 
     player_group.clear(screen, background)
@@ -177,12 +182,12 @@ while not finish:
             window_name = event.dict['dict']['window_name']
             im0 = event.dict['dict']['image']
             cv2.imshow(window_name, im0)
-            cv2.waitKey(1)  # 1 millisecond
+            cv2.waitKey(0)  # 1 millisecond
         elif event.type == second_display_event_type:
             window_name = event.dict['dict']['window_name']
             im0 = event.dict['dict']['image']
             cv2.imshow(window_name, im0)
-            cv2.waitKey(1)  # 1 millisecond
+            cv2.waitKey(0)  # 1 millisecond
 
     # テキストデータから　座標受け取って移動　First player
     detecttxt2 = open('zahyou.txt', 'r')
@@ -353,26 +358,27 @@ while not finish:
 
     Clockclock.tick(60)
 
-    if count > 7200:
+    if count > 360:
         finish = True
 
-first_detector.release()
-second_detector.release()
 
-cv2.destroyAllWindows()
+
+
+
+
 # 画面を真っ暗にする
 screen.fill((0, 0, 0))
-
-player_group.clear(screen, background)
-first_bullet_group.clear(screen, background)
-second_bullet_group.clear(screen, background)
-first_beam_group.clear(screen, background)
-second_beam_group.clear(screen, background)
 
 pygame.display.flip()
 
 pygame.display.set_caption('ボーナスゲーム！')
 
+
+start_screen.show_wait_screen(screen)
+
+
+# 画面を真っ暗にする
+screen.fill((0, 0, 0))
 
 def on_update_color_game(bonus_first_score: int, bonus_second_score: int, count: int):
     first_total = bonus_first_score + first_player.score
