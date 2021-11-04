@@ -352,7 +352,7 @@ def on_update_color_game(bonus_first_score: int, bonus_second_score: int, count:
 
     first_surface = font.render("Score :" + str(first_total), True, (50, 50, 255))
     second_surface = font.render("Score :" + str(second_total), True, (255, 50, 50))
-    countdown_surface = font.render(str(int(10 - (count / 60))), True, (200, 150, 0))
+    countdown_surface = font.render(str((count // 60)), True, (200, 150, 0))
 
     screen.blit(scoreboard, (0, 480))
     screen.blit(first_surface, (50, 505))
