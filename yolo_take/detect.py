@@ -239,4 +239,4 @@ class Detector:
         for w in self.vid_writer:
             if isinstance(w, cv2.VideoWriter):
                 w.release()
-        self.dataset.should_stop = True
+        self.dataset.capture.release()

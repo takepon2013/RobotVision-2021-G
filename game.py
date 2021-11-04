@@ -6,6 +6,7 @@ Created on Thu Oct 21 15:55:35 2021
 @author: fumiyatanaka
 """
 import sys
+import time
 
 import numpy as np
 import pygame
@@ -103,12 +104,15 @@ first_detector = detect.Detector()
 first_detecting = threading.Thread(
     target=first_detector.run,
     kwargs={
-        'source': 1,
+        'source': 0,
         'weights': 'yolo_take/runs/train/Deeplearning-result3/weights/best.pt',
-        'imgsz': 240
+        'imgsz': 256
     }
 )
-# first_detecting.start()
+first_detecting.start()
+
+# カメラの起動を待機する
+time.sleep(1)
 
 # yolov5 detectをスレッドで起動
 second_detector = detect.Detector()
@@ -117,7 +121,7 @@ second_detecting = threading.Thread(
     kwargs={
         'source': 1,
         'weights': 'yolo_take/runs/train/Deeplearning-result3/weights/best.pt',
-        'imgsz': 240,
+        'imgsz': 256,
         'Player1': False
     }
 )
@@ -349,7 +353,7 @@ while not finish:
 
     Clockclock.tick(60)
 
-    if count > 720:
+    if count > 7200:
         finish = True
 
 first_detector.release()

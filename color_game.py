@@ -45,7 +45,7 @@ class ColorGame:
     color_upper_2: np.ndarray
 
     def __init__(self, screen: pygame.Surface, on_update: Callable[[int, int, int], None]):
-        self.stream1 = LoadStreams(sources='1', img_size=240)
+        self.stream1 = LoadStreams(sources='0', img_size=240)
         self.stream2 = LoadStreams(sources='1', img_size=240)
         self.width1 = self.stream1.imgs[0].shape[1]
         self.height1 = self.stream1.imgs[0].shape[0]
