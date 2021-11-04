@@ -92,6 +92,7 @@ gauge_group.add(p2_gauge)
 
 player_group.update(240)
 yolozahyou = 240
+yolozahyou2 = 240
 
 count = 0
 
@@ -202,6 +203,29 @@ while not finish:
         if yolozahyou > 400:
             yolozahyou = 400
 
+    # テキストデータから　座標受け取って移動　Second player
+    detecttxt2 = open('zahyou1.txt', 'r')
+    # プレイヤーのy座標の比率（0~1）
+    height_ratio = detecttxt2.read()
+    detecttxt2.close()
+
+    if height_ratio == '':
+        yolozayhou2 = yolozahyou2
+    else:
+        # 感度をあげている
+        height_ratio2 = float(height_ratio)
+        height_ratio2 = height_ratio2 - 0.5
+
+        # 感度を上げる具体的な数値height_ratio * n　でn倍の感度になる
+        height_ratio2 = height_ratio2 * 3.0
+
+        yolozahyou2 = int(((game_height - 180) / 2 / 0.5) * height_ratio2 + ((game_height - 180) / 2))
+
+        if yolozahyou2 < 0:
+            yolozahyou2 = 0
+        if yolozahyou2 > 400:
+            yolozahyou2 = 400
+
     # 必殺ゲージに関する処理
     if count % 20 == 0:
         first_player.gauge += 1
@@ -286,7 +310,7 @@ while not finish:
 
     # プレイヤー全体のアップデート　大事！
     first_player.update(yolozahyou)
-    second_player.update(200)
+    second_player.update(yolozahyou2)
 
     first_bullet_group.update()
     second_bullet_group.update()
