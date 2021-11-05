@@ -14,7 +14,7 @@ from pathlib import Path
 from events import first_display_event_type, second_display_event_type
 
 import cv2
-import numpy as np
+import multiprocessing
 import pygame.event
 import torch
 import torch.backends.cudnn as cudnn
@@ -64,6 +64,8 @@ class Detector:
             hide_conf=False,  # hide confidences
             half=False,  # use FP16 half-precision inference
             Player1=True,
+            returned_dict=None,
+            dict_index=0
             ) :
 
         hand = 'null'
@@ -207,9 +209,7 @@ class Detector:
                 if view_img:
                     # macosの場合はメインスレッドに処理を委譲する
                     if platform.system() == 'Darwin':
-                        event_type = first_display_event_type if Player1 else second_display_event_type
-                        e = pygame.event.Event(event_type, dict={'image': im0, 'window_name': str(p)})
-                        pygame.event.post(e)
+                        returned_dict[dict_index] = (im0, str(p))
                     else:
                         cv2.imshow(str(p), im0)
                         key = cv2.waitKey(1)  # 1 millisecond

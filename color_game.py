@@ -61,7 +61,11 @@ class ColorGame:
         self.color_lower_2 = np.array(lower_random_hue_2)
 
 
-    def start(self, screen: pygame.Surface, on_update: Callable[[int, int, int], None]):
+    def start(
+            self,
+            screen: pygame.Surface,
+            on_update: Callable[[int, int, int], None]
+    ):
         # 繰り返しの読み込み
         for first, second in zip(self.stream1, self.stream2):
             self.count -= 1

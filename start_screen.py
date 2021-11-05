@@ -7,11 +7,20 @@ Created on Thu Nov  4 14:01:55 2021
 
 import pygame
 
-def s(screen: pygame.Surface, first_color: (int, int, int), second_color: (int, int, int), first_total: int, second_total: int):
-  
+
+def show_bonus_window(
+        screen: pygame.Surface,
+        scoreboard: pygame.Surface,
+        font: pygame.font.Font,
+        first_color: (int, int, int),
+        second_color: (int, int, int),
+        first_total: int,
+        second_total: int,
+        countdown: int
+):
     first_surface = font.render("Score :" + str(first_total), True, (50, 50, 255))
     second_surface = font.render("Score :" + str(second_total), True, (255, 50, 50))
-    countdown_surface = font.render(str((count // 60)), True, (200, 150, 0))
+    countdown_surface = font.render(str((countdown // 60)), True, (200, 150, 0))
     
     pygame.draw.circle(screen, first_color, (300, 240), 60)
     pygame.draw.circle(screen, second_color, (900, 240), 60)
@@ -22,12 +31,10 @@ def s(screen: pygame.Surface, first_color: (int, int, int), second_color: (int, 
     screen.blit(countdown_surface, (600, 505))
 
     print(first_total, second_total)
-
     pygame.display.update()
-    
 
 
-def show_wait_screen(screen: pygame.Surface, color_game.color_lower_1, color_game.color_upper_1, color_game.color_lower_2, color_game.color_upper_2):
+def show_wait_screen(screen: pygame.Surface):
     font = pygame.font.Font(None, 70)
     pygame.display.set_caption('ボーナスゲーム')
     background = pygame.image.load('./assets/bg.png')
@@ -38,7 +45,7 @@ def show_wait_screen(screen: pygame.Surface, color_game.color_lower_1, color_gam
     screen.blit(background, (0, 0))
     
     text = font.render("Tap S key to start bonus game", True, (200, 150, 0))
-    screen.blit(text, (100, 400))
+    screen.blit(text, (200, 400))
         
     pygame.display.update()
     
@@ -73,10 +80,6 @@ def show_start_screen(screen: pygame.Surface):
     pygame.display.update()
     
     while True:
-        
-
-        
-        
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
