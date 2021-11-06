@@ -190,7 +190,7 @@ class ColorGame:
     def generate_hue_color(self) -> ((int, int, int), (int, int, int)):
         rand_num = random.randint(0, 17)
         hue = 10 * rand_num
-        return (hue, 120, 200), (hue + 10, 255, 255)
+        return (hue, 60, 100), (hue + 10, 255, 255)
 
     def convert_ndarray_pygame_image(self, array: np.ndarray, width: int, height: int) -> pygame.Surface:
         opencv_image = array[:, :, ::-1]  # OpenCVはBGR、pygameはRGBなので変換してやる必要がある。

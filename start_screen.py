@@ -30,7 +30,7 @@ def show_bonus_window(
     screen.blit(first_surface, (50, 505))
     screen.blit(second_surface, (980, 505))
     screen.blit(countdown_surface, (600, 505))
-    screen.blit(text, (1280 // 2 - 100, 100))
+    screen.blit(text, (1280 // 2 - text.get_width() // 2, 100))
 
     print(first_total, second_total)
     pygame.display.update()
@@ -106,19 +106,32 @@ def show_result_screen(screen: pygame.Surface, font: pygame.font.Font, score_fon
     second_color = (255, 50, 50)
     result_render = font.render('RESULT', True, white)
     first_score_render = score_font.render(str(score1), True, white)
-    first_result_render = score_font.render('WIN!!' if score1 > score2 else 'Loose...', True, first_color)
+    first_result_render = score_font.render(
+        'WIN!!' if score1 > score2 else 'Draw' if score1 == score2 else 'Loose...',
+        True,
+        first_color
+    )
     second_score_render = score_font.render(str(score2), True, white)
-    second_result_render = score_font.render('WIN!!' if score2 > score1 else 'Loose...', True, second_color)
+    second_result_render = score_font.render(
+        'WIN!!' if score2 > score1 else 'Draw' if score1 == score2 else 'Loose...',
+        True,
+        second_color
+    )
 
-    pygame.draw.circle(screen, first_color, (game_width // 4, 300), 80)
-    pygame.draw.circle(screen, second_color, (game_width // 4 * 3, 300), 80)
+    pygame.draw.circle(screen, first_color, (game_width // 4, 400), 80)
+    pygame.draw.circle(screen, second_color, (game_width // 4 * 3, 400), 80)
 
-    screen.blit(result_render, (game_width // 2 - 35, 60))
-    screen.blit(first_result_render, (game_width // 4, 60))
-    screen.blit(second_result_render, (game_width // 4 * 3, 60))
+    diff = result_render.get_width() // 2
+    screen.blit(result_render, (game_width // 2 - diff, 60))
+    diff = first_result_render.get_width() // 2
+    screen.blit(first_result_render, (game_width // 4 - diff, 160 + 20))
+    diff = second_result_render.get_width() // 2
+    screen.blit(second_result_render, (game_width // 4 * 3 - diff, 160 + 20))
 
-    screen.blit(first_score_render, (game_width // 4 - 45, 300 + 40))
-    screen.blit(second_score_render, (game_width // 4 * 3, 300 + 40))
+    diff = first_score_render.get_width() // 2
+    screen.blit(first_score_render, (game_width // 4 - diff, 400 - first_score_render.get_height() // 2))
+    diff = second_score_render.get_width() // 2
+    screen.blit(second_score_render, (game_width // 4 * 3 - diff, 400 - second_score_render.get_height() // 2))
 
     pygame.display.update()
 

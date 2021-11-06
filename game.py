@@ -375,6 +375,8 @@ def main():
 
     pygame.display.set_caption('ボーナスゲーム！')
 
+    cv2.destroyAllWindows()
+
     # ボーナスゲーム
     bonus_game = color_game.ColorGame()
 
