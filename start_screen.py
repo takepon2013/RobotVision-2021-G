@@ -18,10 +18,11 @@ def show_bonus_window(
         second_total: int,
         countdown: int
 ):
+    text = font.render('Find Same Color!!', True, (255, 255, 255))
     first_surface = font.render("Score :" + str(first_total), True, (50, 50, 255))
     second_surface = font.render("Score :" + str(second_total), True, (255, 50, 50))
     countdown_surface = font.render(str((countdown // 60)), True, (200, 150, 0))
-    
+
     pygame.draw.circle(screen, first_color, (300, 240), 60)
     pygame.draw.circle(screen, second_color, (900, 240), 60)
 
@@ -29,6 +30,7 @@ def show_bonus_window(
     screen.blit(first_surface, (50, 505))
     screen.blit(second_surface, (980, 505))
     screen.blit(countdown_surface, (600, 505))
+    screen.blit(text, (1280 // 2 - 100, 100))
 
     print(first_total, second_total)
     pygame.display.update()
@@ -80,7 +82,6 @@ def show_start_screen(screen: pygame.Surface):
     pygame.display.update()
     
     while True:
-        pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
@@ -93,14 +94,42 @@ def show_start_screen(screen: pygame.Surface):
                 return
         clock.tick(60)
         
-      
-        
-    
 
+def show_result_screen(screen: pygame.Surface, font: pygame.font.Font, score_font: pygame.font.Font, score1: int, score2: int):
+    # 真っ暗にする
+    screen.fill((0, 0, 0))
 
-    
-if __name__ == '__main__':
-    pygame.init()
-    display = pygame.display.set_mode((1280, 580))
-    show_start_screen(display)
-    
+    game_width = 1280
+    game_height = 580
+    white = (255, 255, 255)
+    first_color = (50, 50, 255)
+    second_color = (255, 50, 50)
+    result_render = font.render('RESULT', True, white)
+    first_score_render = score_font.render(str(score1), True, white)
+    first_result_render = score_font.render('WIN!!' if score1 > score2 else 'Loose...', True, first_color)
+    second_score_render = score_font.render(str(score2), True, white)
+    second_result_render = score_font.render('WIN!!' if score2 > score1 else 'Loose...', True, second_color)
+
+    pygame.draw.circle(screen, first_color, (game_width // 4, 300), 80)
+    pygame.draw.circle(screen, second_color, (game_width // 4 * 3, 300), 80)
+
+    screen.blit(result_render, (game_width // 2 - 35, 60))
+    screen.blit(first_result_render, (game_width // 4, 60))
+    screen.blit(second_result_render, (game_width // 4 * 3, 60))
+
+    screen.blit(first_score_render, (game_width // 4 - 45, 300 + 40))
+    screen.blit(second_score_render, (game_width // 4 * 3, 300 + 40))
+
+    pygame.display.update()
+
+    clock = pygame.time.Clock()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
+            if event.type != pygame.KEYDOWN:
+                continue
+            if event.key == ord('q'):
+                return
+        clock.tick(60)

@@ -424,6 +424,11 @@ def main():
 
     bonus_game.start(screen, on_update_color_game)
 
+    first_total = int(bonus_game.first_score + first_player.score)
+    second_total = int(bonus_game.second_score + second_player.score)
+    score_font = pygame.font.Font(None, 90)
+    start_screen.show_result_screen(screen, font=font, score_font=score_font, score1=first_total, score2=second_total)
+
     pygame.display.quit()
     pygame.quit()
     sys.exit()

@@ -20,8 +20,7 @@ def bgr_to_hsv(b, g, r):
 
 
 class ColorGame:
-    # 10秒
-    count = 60 * 10
+    count = 60 * 10 # 10秒
     first_score: int = 0
     second_score: int = 0
     first_time = 0
@@ -69,8 +68,6 @@ class ColorGame:
         # 繰り返しの読み込み
         for first, second in zip(self.stream1, self.stream2):
             self.count -= 1
-            self.first_time += 1
-            self.second_time += 1
             if self.count < 0:
                 self.finish = True
                 return
@@ -122,11 +119,6 @@ class ColorGame:
     ):
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-        # 輝度の平滑化
-        # h, s, v = cv2.split(hsv)
-        # v = cv2.equalizeHist(v)
-        # hsv = cv2.merge((h, s, v))
-
         mask = cv2.inRange(hsv, lower_hsv, upper_hsv)
         # output = cv2.bitwise_and(frame, frame, mask=mask)
         bgr = hsv_to_bgr(hsv_color[0], hsv_color[1], hsv_color[2])
@@ -135,9 +127,9 @@ class ColorGame:
         detect_x, detect_y, detect_w, detect_h, score = self.calculate_score(mask)
         # 10 %以上の領域で色を検出できたら
         if score > 10:
-            if is_first:
+            if is_first and score > self.first_score:
                 self.first_score = score
-            else:
+            elif not is_first and score > self.second_score:
                 self.second_score = score
 
         copied_frame = copy.deepcopy(frame)
@@ -155,16 +147,6 @@ class ColorGame:
         )
         cv2.rectangle(copied_frame, (detect_x, detect_y), (detect_x + detect_w, detect_y + detect_h), bgr, thickness=3)
         cv2.imshow(window_name, copied_frame)
-
-        # game_width = 1280
-        # game_height = 580
-        #
-        # # game_height - 100の100はスコアボード分
-        # image = self.convert_ndarray_pygame_image(frame, game_width // 2, game_height - 100)
-        #
-        # position = (0, 0) if is_first else (game_width // 2, 0)
-        # screen.blit(image, position)
-        # pygame.display.update()
 
     # 結果の計算を行うメソッド。面積をそのまま結果としている。
     def calculate_score(self, bin_img: np.ndarray) -> (int, int, int, int, int):
@@ -207,7 +189,7 @@ class ColorGame:
     # (H, S, V)
     def generate_hue_color(self) -> ((int, int, int), (int, int, int)):
         rand_num = random.randint(0, 17)
-        hue = 10 * 0
+        hue = 10 * rand_num
         return (hue, 120, 200), (hue + 10, 255, 255)
 
     def convert_ndarray_pygame_image(self, array: np.ndarray, width: int, height: int) -> pygame.Surface:
