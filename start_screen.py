@@ -41,16 +41,16 @@ def show_wait_screen(screen: pygame.Surface):
     pygame.display.set_caption('ボーナスゲーム')
     background = pygame.image.load('./assets/bg.png')
     background = pygame.transform.scale(background, (1200, 480))
-    
+
     clock = pygame.time.Clock()
-    
+
     screen.blit(background, (0, 0))
-    
+
     text = font.render("Tap S key to start bonus game", True, (200, 150, 0))
     screen.blit(text, (200, 400))
-        
+
     pygame.display.update()
-    
+
     while True:
         pygame.display.update()
         for event in pygame.event.get():
@@ -71,16 +71,16 @@ def show_start_screen(screen: pygame.Surface):
     pygame.display.set_caption('スタート画面')
     background = pygame.image.load('./assets/bg.png')
     background = pygame.transform.scale(background, (1200, 480))
-    
+
     clock = pygame.time.Clock()
-    
+
     screen.blit(background, (0, 0))
-    
+
     text = font.render("Tap S key", True, (200, 150, 0))
     screen.blit(text, (500, 400))
-        
+
     pygame.display.update()
-    
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -93,7 +93,7 @@ def show_start_screen(screen: pygame.Surface):
                 print('S')
                 return
         clock.tick(60)
-        
+
 
 def show_result_screen(screen: pygame.Surface, font: pygame.font.Font, score_font: pygame.font.Font, score1: int, score2: int):
     # 真っ暗にする（今表示しているSpriteなどを消すため）
@@ -105,7 +105,14 @@ def show_result_screen(screen: pygame.Surface, font: pygame.font.Font, score_fon
     first_color = (50, 50, 255)
     second_color = (255, 50, 50)
 
-    background = pygame.image.load('./assets/bg.png')
+    if score1 > score2:
+        background_file_name = './ assets / win.png'
+    elif score1 < score2:
+        background_file_name = './assets/loose.png'
+    else:
+        background_file_name = './assets/draw.png'
+
+    background = pygame.image.load(background_file_name)
     result_render = font.render('RESULT', True, white)
     first_score_render = score_font.render(str(score1), True, white)
     first_result_render = score_font.render(
