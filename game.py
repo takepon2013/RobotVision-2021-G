@@ -378,11 +378,9 @@ def main():
     pygame.display.set_caption('ボーナスゲーム！')
 
     cv2.destroyAllWindows()
-
+    start_screen.show_wait_screen(screen)
     # ボーナスゲーム
     bonus_game = color_game.ColorGame()
-
-    start_screen.show_wait_screen(screen)
 
     # 画面を真っ暗にする
     screen.fill((0, 0, 0))

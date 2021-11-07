@@ -227,9 +227,6 @@ class Detector:
                             vid_path[i] = save_path
                             if isinstance(vid_writer[i], cv2.VideoWriter):
                                 vid_writer[i].release()  # release previous video writer
-        
-        
-
 
         # Print results
         t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
