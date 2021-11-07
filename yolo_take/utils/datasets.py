@@ -10,6 +10,7 @@ import logging
 import os
 import random
 import shutil
+import sys
 import time
 from itertools import repeat
 from multiprocessing.pool import ThreadPool, Pool
@@ -281,19 +282,14 @@ class LoadWebcam:  # for inference
 
 class LoadStreams:
 
-    should_stop = False
+    stop: bool
 
     # YOLOv5 streamloader, i.e. `python detect.py --source 'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP streams`
-    def __init__(self, sources='streams.txt', img_size=640, stride=32, auto=True):
+    def __init__(self, sources, img_size=640, stride=32, stop=False, auto=True):
         self.mode = 'stream'
         self.img_size = img_size
         self.stride = stride
-
-        if os.path.isfile(sources):
-            with open(sources, 'r') as f:
-                sources = [x.strip() for x in f.read().strip().splitlines() if len(x.strip())]
-        else:
-            sources = [sources]
+        self.stop = stop
 
         n = len(sources)
         self.imgs, self.fps, self.frames, self.threads = [None] * n, [0] * n, [0] * n, [None] * n
@@ -327,12 +323,14 @@ class LoadStreams:
             print('WARNING: Different stream shapes detected. For optimal performance supply similarly-shaped streams.')
 
     def update(self, i, cap, stream):
+
+        # もしstopするべきならスレッドを停止する
+        if self.stop:
+            sys.exit()
+
         # Read stream `i` frames in daemon thread
         n, f, read = 0, self.frames[i], 1  # frame number, frame array, inference every 'read' frame
         while cap.isOpened() and n < f:
-            if self.should_stop:
-                cap.release()
-                return
             n += 1
             # _, self.imgs[index] = cap.read()
             cap.grab()
@@ -351,8 +349,6 @@ class LoadStreams:
         return self
 
     def __next__(self):
-        if self.should_stop:
-            raise StopIteration
         self.count += 1
         if not all(x.is_alive() for x in self.threads) or cv2.waitKey(1) == ord('q'):  # q to quit
             cv2.destroyAllWindows()
