@@ -105,36 +105,36 @@ def main():
     returned_dict = manager.dict()
 
     # yolov5 detectをスレッドで起動
-    first_detector = detect.Detector()
-    first_detecting = multiprocessing.Process(
-        target=first_detector.run,
+    detector = detect.Detector()
+    detecting = multiprocessing.Process(
+        target=detector.run,
         kwargs={
-            'source': 0,
+            'source': 1,
+            'sub_source': 1,
             'weights': 'yolo_take/runs/train/Deeplearning-result3/weights/best.pt',
             'imgsz': 256,
-            'returned_dict': returned_dict,
-            'dict_index': 0
+            'returned_dict': returned_dict
         }
     )
-    first_detecting.start()
+    detecting.start()
 
     # カメラの起動を待機する
     time.sleep(1)
 
-    # yolov5 detectをスレッドで起動
-    second_detector = detect.Detector()
-    second_detecting = multiprocessing.Process(
-        target=second_detector.run,
-        kwargs={
-            'source': 1,
-            'weights': 'yolo_take/runs/train/Deeplearning-result3/weights/best.pt',
-            'imgsz': 256,
-            'Player1': False,
-            'returned_dict': returned_dict,
-            'dict_index': 1
-        }
-    )
-    second_detecting.start()
+    # # yolov5 detectをスレッドで起動
+    # second_detector = detect.Detector()
+    # second_detecting = multiprocessing.Process(
+    #     target=second_detector.run,
+    #     kwargs={
+    #         'source': 1,
+    #         'weights': 'yolo_take/runs/train/Deeplearning-result3/weights/best.pt',
+    #         'imgsz': 256,
+    #         'Player1': False,
+    #         'returned_dict': returned_dict,
+    #         'dict_index': 1
+    #     }
+    # )
+    # second_detecting.start()
 
     start_screen.show_start_screen(screen)
 
@@ -193,7 +193,7 @@ def main():
             cv2.imshow(w_name, img)
             cv2.waitKey(1)
             img, w_name = returned_dict[1]
-            cv2.imshow(w_name, img)
+            cv2.imshow(w_name + '_sub', img)
             cv2.waitKey(1)
 
             # テキストデータから　座標受け取って移動　First player
@@ -367,6 +367,8 @@ def main():
 
         if count > 360:
             finish = True
+
+    detector.stop = True
 
     # 画面を真っ暗にする
     screen.fill((0, 0, 0))

@@ -37,11 +37,13 @@ from utils.torch_utils import load_classifier, select_device, time_sync
 class Detector:
     
     dataset: LoadStreams
+    stop: bool = False
 
     @torch.no_grad()
     def run(self,
             weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
             source=ROOT / 'data/images',  # file/dir/URL/glob, 0 for webcam
+            sub_source=None,
             imgsz=640,  # inference size (pixels)
             conf_thres=0.25,  # confidence threshold
             iou_thres=0.45,  # NMS IOU threshold
@@ -63,16 +65,14 @@ class Detector:
             hide_labels=False,  # hide labels
             hide_conf=False,  # hide confidences
             half=False,  # use FP16 half-precision inference
-            Player1=True,
             returned_dict=None,
-            dict_index=0
-            ) :
+            ):
 
         hand = 'null'
         source = str(source)
+        if sub_source is not None:
+            sub_source = str(sub_source)
         save_img = not nosave and not source.endswith('.txt')  # save inference images
-        webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
-            ('rtsp://', 'rtmp://', 'http://', 'https://'))
 
         # Directories
         save_dir = increment_path(Path(project) / name, exist_ok=exist_ok)  # increment run
@@ -101,7 +101,7 @@ class Detector:
 
         view_img = True
         cudnn.benchmark = True  # set True to speed up constant image size inference
-        dataset = LoadStreams(source, img_size=imgsz, stride=stride, auto=pt)
+        dataset = LoadStreams(sources=[source, sub_source], img_size=imgsz, stride=stride, auto=pt)
         self.dataset = dataset
         bs = len(dataset)  # batch_size
         vid_path, vid_writer = [None] * bs, [None] * bs
@@ -110,6 +110,10 @@ class Detector:
 
         dt, seen = [0.0, 0.0, 0.0], 0
         for path, img, im0s, vid_cap in dataset:
+            # もし stopしたほうが良いならスレッドを停止する
+            if self.stop:
+                self.dataset.stop = self.stop
+                sys.exit()
             t1 = time_sync()
             img = torch.from_numpy(img).to(device)
             img = img.half() if half else img.float()  # uint8 to fp16/32
@@ -171,14 +175,13 @@ class Detector:
                                 f.write(('%g ' * len(line)).rstrip() % line + '\n')
                         zahyou = torch.tensor(xyxy).tolist()
 
-                        if Player1:
+                        if i == 0:
                             tex1 = open('zahyou.txt', 'w')
                             cap_height = im0.shape[0]
                             normalized_height = ((zahyou[1] + zahyou[3]) / 2) / cap_height
                             tex1.write(str(normalized_height))
                             tex1.close()
-
-                        if not Player1:
+                        elif i == 1:
                             tex1 = open('zahyou1.txt', 'w')
                             cap_height = im0.shape[0]
                             normalized_height = ((zahyou[1] + zahyou[3]) / 2) / cap_height
@@ -194,12 +197,11 @@ class Detector:
 
                 # Print time (inference-only)
                 # print(f'{s}Done. ({t3 - t2:.3f}s)')
-                if Player1:
+                if i == 0:
                     tex = open('out.txt', 'w')
                     tex.write(str(hand))
                     tex.close()
-
-                if not Player1:
+                elif i == 1:
                     tex = open('out1.txt', 'w')
                     tex.write(str(hand))
                     tex.close()
@@ -209,7 +211,7 @@ class Detector:
                 if view_img:
                     # macosの場合はメインスレッドに処理を委譲する
                     if platform.system() == 'Darwin':
-                        returned_dict[dict_index] = (im0, str(p))
+                        returned_dict[i] = (im0, str(p))
                     else:
                         cv2.imshow(str(p), im0)
                         key = cv2.waitKey(1)  # 1 millisecond

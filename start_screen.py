@@ -96,7 +96,7 @@ def show_start_screen(screen: pygame.Surface):
         
 
 def show_result_screen(screen: pygame.Surface, font: pygame.font.Font, score_font: pygame.font.Font, score1: int, score2: int):
-    # 真っ暗にする
+    # 真っ暗にする（今表示しているSpriteなどを消すため）
     screen.fill((0, 0, 0))
 
     game_width = 1280
@@ -104,6 +104,8 @@ def show_result_screen(screen: pygame.Surface, font: pygame.font.Font, score_fon
     white = (255, 255, 255)
     first_color = (50, 50, 255)
     second_color = (255, 50, 50)
+
+    background = pygame.image.load('./assets/bg.png')
     result_render = font.render('RESULT', True, white)
     first_score_render = score_font.render(str(score1), True, white)
     first_result_render = score_font.render(
@@ -117,6 +119,8 @@ def show_result_screen(screen: pygame.Surface, font: pygame.font.Font, score_fon
         True,
         second_color
     )
+
+    screen.blit(background, (0, 0))
 
     pygame.draw.circle(screen, first_color, (game_width // 4, 400), 80)
     pygame.draw.circle(screen, second_color, (game_width // 4 * 3, 400), 80)
