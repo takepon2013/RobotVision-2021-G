@@ -109,8 +109,8 @@ def main():
     detecting = multiprocessing.Process(
         target=detector.run,
         kwargs={
-            'source': 1,
-            'sub_source': 1,
+            'source': 0,
+            'sub_source': 0,
             'weights': 'yolo_take/runs/train/Deeplearning-result3/weights/best.pt',
             'imgsz': 256,
             'returned_dict': returned_dict
@@ -378,9 +378,16 @@ def main():
     pygame.display.set_caption('ボーナスゲーム！')
 
     cv2.destroyAllWindows()
-    start_screen.show_wait_screen(screen)
+
     # ボーナスゲーム
     bonus_game = color_game.ColorGame()
+
+    bonus_game.prepare(screen)
+
+    while not bonus_game.can_show_color:
+        pass
+
+    start_screen.show_wait_screen(screen)
 
     # 画面を真っ暗にする
     screen.fill((0, 0, 0))
@@ -424,7 +431,7 @@ def main():
             count
         )
 
-    bonus_game.start(screen, on_update_color_game)
+    bonus_game.start(on_update_color_game)
 
     first_total = int(bonus_game.first_score + first_player.score)
     second_total = int(bonus_game.second_score + second_player.score)

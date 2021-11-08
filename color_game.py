@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 import pygame
 
+import start_screen
 from yolo_take.utils.datasets import LoadStreams
 
 
@@ -20,6 +21,7 @@ def bgr_to_hsv(b, g, r):
 
 
 class ColorGame:
+    can_show_color: bool = False
     duration = 600  # 10秒
     count = 60 * 10  # 10秒
     first_score: int = 0
@@ -44,7 +46,7 @@ class ColorGame:
     color_upper_2: np.ndarray
 
     def __init__(self):
-        self.streams = LoadStreams(sources=['1', '1'], img_size=256)
+        self.streams = LoadStreams(sources=['0', '0'], img_size=256)
         self.width1 = self.streams.imgs[0].shape[1]
         self.height1 = self.streams.imgs[0].shape[0]
         self.width2 = self.streams.imgs[1].shape[1]
@@ -58,10 +60,19 @@ class ColorGame:
         self.color_upper_2 = np.array(upper_random_hue_2)
         self.color_lower_2 = np.array(lower_random_hue_2)
 
+    def prepare(self, screen: pygame.Surface,):
+        for _, _, imgs, _ in self.streams:
+            if self.can_show_color:
+                break
+            cv2.imshow('Player1', imgs[0])
+            cv2.imshow('Player2', imgs[1])
+            start_screen.show_setup_camera_screen(screen)
+            key = cv2.waitKey(1)
+            if key == ord('s'):
+                self.can_show_color = True
 
     def start(
             self,
-            screen: pygame.Surface,
             on_update: Callable[[int, int, int], None]
     ):
         # 繰り返しの読み込み

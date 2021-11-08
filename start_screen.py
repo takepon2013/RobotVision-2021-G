@@ -46,8 +46,8 @@ def show_wait_screen(screen: pygame.Surface):
 
     screen.blit(background, (0, 0))
 
-    text = font.render("Tap S key to start bonus game", True, (200, 150, 0))
-    screen.blit(text, (200, 400))
+    text = font.render("Tap S key to start bonus game", True, (0, 255, 0))
+    screen.blit(text, (250, 200))
 
     pygame.display.update()
 
@@ -64,6 +64,15 @@ def show_wait_screen(screen: pygame.Surface):
                 print('S')
                 return
         clock.tick(60)
+
+
+def show_setup_camera_screen(screen: pygame.Surface):
+    warning_font = pygame.font.Font(None, 45)
+    pygame.display.set_caption('カメラのセットの確認')
+
+    warning_text = warning_font.render("!! Move your camera window to play bonus game comfortably !!", True, (255, 0, 0))
+    screen.blit(warning_text, (100, 400))
+    pygame.display.update()
 
 
 def show_start_screen(screen: pygame.Surface):
