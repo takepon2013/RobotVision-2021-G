@@ -40,7 +40,7 @@ while True:
         display_str = f"class: {class_name}"
 
     cv2.putText(
-        src, display_str, (30, 30), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 0), 1,
+        src, display_str, (30, 100), cv2.FONT_HERSHEY_PLAIN, 5, (0, 0, 0), 5,
     )
 
     cv2.imshow("camera", src)
@@ -49,23 +49,18 @@ while True:
     k = cv2.waitKey(1)
 
     frame = np.clip(1.0 * frame + 50.0, 0, 255).astype(np.uint8)
-    
-        
+
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-
 
     # HSVによる上限、下限の設定　 ([Hue, Saturation, Value])
     hsvLower = np.array([-10, 60, 60])  # 下限
     hsvUpper = np.array([40, 255, 255])  # 上限
-    
-        # HSVからマスクを作成
+
+    # HSVからマスクを作成
     hsv_mask = cv2.inRange(hsv, hsvLower, hsvUpper)
 
-
-            # 白色領域のノイズを除去する
+    # 白色領域のノイズを除去する
     hsv_mask = cv2.erode(hsv_mask, kernel)  # 収縮処理
-
 
     hsv_mask = cv2.dilate(hsv_mask, kernel)  # 膨張処理
 
@@ -77,7 +72,6 @@ while True:
 
         # 各領域において...
         for i in top_idx:
-
             # ターミナル上に詳細表示
             print(
                 "[x0: {}, y0: {}, x幅: {}, y幅: {}, 面積: {}]".format(
@@ -91,38 +85,32 @@ while True:
             x1 = x0 + stats[i, 2]
             y1 = y0 + stats[i, 3]
             # 長方形描画 (引数 : 描画画像、 長方形の左上角、 長方形の右下角、 色(BGR)、 線の太さ)
-            
-            
-            
-            
-            
-        # grayscaleに変換
-    gray = cv2.cvtColor(
-            src[y0 : y1 + 1, x0 : x1 + 1], cv2.COLOR_BGR2GRAY
-        )
+            # grayscaleに変換
+            gray = cv2.cvtColor(
+                src[y0: y1 + 1, x0: x1 + 1], cv2.COLOR_BGR2GRAY
+            )
 
-        # リサイズ (H, W) = (56, 56) ※要調整
-    gray = cv2.resize(gray, (56, 84))
+            # リサイズ (H, W) = (56, 56) ※要調整
+            gray = cv2.resize(gray, (56, 84))
 
-    cv2.imshow("gray", gray)
-        # HOGによって特徴抽出
-    feat = hog(gray)
+            cv2.imshow("gray", gray)
+            # HOGによって特徴抽出
+            feat = hog(gray)
 
-        # 配列の形を変更 (56*56,) => (1, 56*56)
-        # feat = feat.reshape(1, 56 * 56) と同じ
-    feat = feat.reshape(1, -1)
+            # 配列の形を変更 (56*56,) => (1, 56*56)
+            # feat = feat.reshape(1, 56 * 56) と同じ
+            feat = feat.reshape(1, -1)
 
-        # 最近傍探索. 二重のリストで結果が返ってくる.
-    distances, indices = model.kneighbors(feat)
+            # 最近傍探索. 二重のリストで結果が返ってくる.
+            distances, indices = model.kneighbors(feat)
 
-        # 近かった特徴量のインデックス(indicies)をクラスのラベルに変換
-    label = labels[indices[0][0]]
-    class_name = LABEL2CLS[label]
+            # 近かった特徴量のインデックス(indicies)をクラスのラベルに変換
+            label = labels[indices[0][0]]
+            class_name = LABEL2CLS[label]
 
     # 終了
     if k == ord("q"):
         break
-    
 
 cap.release()
 cv2.destroyAllWindows()

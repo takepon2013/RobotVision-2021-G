@@ -41,4 +41,3 @@ labels = np.array(labels, dtype=np.uint8)
 # 配列を保存
 np.save("./data/features.npy", features)
 np.save("./data/labels.npy", labels)
-

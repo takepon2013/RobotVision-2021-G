@@ -109,8 +109,8 @@ def main():
     detecting = multiprocessing.Process(
         target=detector.run,
         kwargs={
-            'source': 0,
-            'sub_source': 0,
+            'source': 1,
+            'sub_source': 1,
             'weights': 'yolo_take/runs/train/Deeplearning-result3/weights/best.pt',
             'imgsz': 256,
             'returned_dict': returned_dict
@@ -402,7 +402,7 @@ def main():
 
         # H S V
         first_color = [
-            bonus_game.color_upper_1[0] + bonus_game.color_lower_1[0] // 2,
+            (bonus_game.color_upper_1[0] + bonus_game.color_lower_1[0]) // 2,
             bonus_game.color_upper_1[1],
             bonus_game.color_upper_1[2]
         ]
@@ -412,7 +412,7 @@ def main():
 
         # H S V
         second_color = [
-            bonus_game.color_upper_2[0] + bonus_game.color_lower_2[0] // 2,
+            (bonus_game.color_upper_2[0] + bonus_game.color_lower_2[0]) // 2,
             bonus_game.color_upper_2[1],
             bonus_game.color_upper_2[2]
         ]

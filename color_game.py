@@ -21,9 +21,11 @@ def bgr_to_hsv(b, g, r):
 
 
 class ColorGame:
+    first_cleared = False
+    second_cleared = False
     can_show_color: bool = False
-    duration = 600  # 10秒
-    count = 60 * 10  # 10秒
+    duration = 60 * 30  # 10秒固定
+    count = 60 * 30  # 10秒。0になったら終わり
     first_score: int = 0
     second_score: int = 0
     first_time = 0
@@ -46,7 +48,7 @@ class ColorGame:
     color_upper_2: np.ndarray
 
     def __init__(self):
-        self.streams = LoadStreams(sources=['0', '0'], img_size=256)
+        self.streams = LoadStreams(sources=['1', '1'], img_size=256)
         self.width1 = self.streams.imgs[0].shape[1]
         self.height1 = self.streams.imgs[0].shape[0]
         self.width2 = self.streams.imgs[1].shape[1]
@@ -76,8 +78,12 @@ class ColorGame:
             on_update: Callable[[int, int, int], None]
     ):
         # 繰り返しの読み込み
+        clock = pygame.time.Clock()
         for _, _, imgs, _ in self.streams:
+            clock.tick(60)
             self.count -= 1
+            self.first_time += 1
+            self.second_time += 1
             if self.count < 0:
                 self.finish = True
                 return
@@ -85,7 +91,7 @@ class ColorGame:
             img = imgs[0]
             width = self.width1
             height = self.height1
-            mean_color_1 = (self.color_upper_1[0] + self.color_lower_1[0] // 2, self.color_upper_1[1], self.color_upper_1[2])
+            mean_color_1 = (self.color_upper_1[0] + self.color_lower_1[0]) // 2, self.color_upper_1[1], self.color_upper_1[2]
             self.draw_and_calculate(
                 'Player1',
                 img,
@@ -99,7 +105,7 @@ class ColorGame:
             img = imgs[1]
             width = self.width2
             height = self.height2
-            mean_color_2 = (self.color_upper_2[0] + self.color_lower_2[0] // 2, self.color_upper_2[1], self.color_upper_2[2])
+            mean_color_2 = (self.color_upper_2[0] + self.color_lower_2[0]) // 2, self.color_upper_2[1], self.color_upper_2[2]
             self.draw_and_calculate(
                 'Player2',
                 img,
@@ -130,7 +136,7 @@ class ColorGame:
         bgr = hsv_to_bgr(hsv_color[0], hsv_color[1], hsv_color[2])
 
         # スコアの計算
-        detect_x, detect_y, detect_w, detect_h, score = self.calculate_score(mask)
+        detect_x, detect_y, detect_w, detect_h, area = self.calculate_score(mask)
 
         # 描画用のフレーム
         copied_frame = copy.deepcopy(frame)
@@ -138,35 +144,57 @@ class ColorGame:
         center_x = width // 2
         center_y = height // 2
 
-        # 20 %以上の領域で色を検出できたら
-        if score > 20:
-            if is_first and score > self.first_score:
-                self.first_score = score + (self.duration - self.first_time) // 60
-            elif not is_first and score > self.second_score:
-                self.second_score = score + (self.duration - self.second_time) // 60
-        else:
+        cleared = self.first_cleared if is_first else self.second_cleared
+
+        if cleared:
             cv2.putText(
                 copied_frame,
-                'Too small or not detected',
-                (center_x - 300, center_y + 160),
+                'CLEAR!!',
+                (center_x, center_y),
                 cv2.FONT_HERSHEY_PLAIN,
                 3,
                 bgr,
                 thickness=3
             )
+        else:
+            # 20 %以上の領域で色を検出できたら
+            if area > 20:
+                score = (self.duration - self.first_time) // 60 if is_first else (
+                                                                                             self.duration - self.second_time) // 60
+                if is_first and score > self.first_score:
+                    self.first_score = score
+                    cleared = True
+                elif not is_first and score > self.second_score:
+                    self.second_score = score
+                    cleared = True
+            else:
+                cv2.putText(
+                    copied_frame,
+                    'Too small or not detected',
+                    (center_x - 300, center_y + 160),
+                    cv2.FONT_HERSHEY_PLAIN,
+                    3,
+                    bgr,
+                    thickness=3
+                )
+            cv2.circle(copied_frame, (center_x, center_y), 60, bgr, -1)
+            cv2.putText(
+                copied_frame,
+                'Find Same Color!',
+                (center_x - 200, center_y - 80),
+                cv2.FONT_HERSHEY_PLAIN,
+                3,
+                bgr,
+                thickness=3
+            )
+            cv2.rectangle(copied_frame, (detect_x, detect_y), (detect_x + detect_w, detect_y + detect_h), bgr, thickness=3)
 
-        cv2.circle(copied_frame, (center_x, center_y), 60, bgr, -1)
-        cv2.putText(
-            copied_frame,
-            'Find Same Color!',
-            (center_x - 200, center_y - 80),
-            cv2.FONT_HERSHEY_PLAIN,
-            3,
-            bgr,
-            thickness=3
-        )
-        cv2.rectangle(copied_frame, (detect_x, detect_y), (detect_x + detect_w, detect_y + detect_h), bgr, thickness=3)
         cv2.imshow(window_name, copied_frame)
+
+        if is_first:
+            self.first_cleared = cleared
+        else:
+            self.second_cleared = cleared
 
     # 結果の計算を行うメソッド。面積をそのまま結果としている。
     def calculate_score(self, bin_img: np.ndarray) -> (int, int, int, int, int):
@@ -197,9 +225,9 @@ class ColorGame:
         height = stats[best_index][3]
         area = width * height
         total_area = bin_img.shape[0] * bin_img.shape[1]
-        score = area / total_area * 100
-        print(f'Score {score}, area {area}')
-        return x, y, width, height, score
+        area_score = area / total_area * 100
+        print(f'Score {area_score}, area {area}')
+        return x, y, width, height, area_score
 
     def release(self):
         cv2.destroyWindow('mask1')
