@@ -10,6 +10,7 @@ import logging
 import os
 import random
 import shutil
+import sys
 import time
 from itertools import repeat
 from multiprocessing.pool import ThreadPool, Pool
@@ -26,10 +27,10 @@ from PIL import Image, ImageOps, ExifTags
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
-from utils.augmentations import Albumentations, augment_hsv, copy_paste, letterbox, mixup, random_perspective
-from utils.general import check_dataset, check_requirements, check_yaml, clean_str, segments2boxes, \
+from yolo_take.utils.augmentations import Albumentations, augment_hsv, copy_paste, letterbox, mixup, random_perspective
+from yolo_take.utils.general import check_dataset, check_requirements, check_yaml, clean_str, segments2boxes, \
     xywh2xyxy, xywhn2xyxy, xyxy2xywhn, xyn2xy
-from utils.torch_utils import torch_distributed_zero_first
+from yolo_take.utils.torch_utils import torch_distributed_zero_first
 
 # Parameters
 HELP_URL = 'https://github.com/ultralytics/yolov5/wiki/Train-Custom-Data'
@@ -280,17 +281,15 @@ class LoadWebcam:  # for inference
 
 
 class LoadStreams:
+
+    stop: bool
+
     # YOLOv5 streamloader, i.e. `python detect.py --source 'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP streams`
-    def __init__(self, sources='streams.txt', img_size=640, stride=32, auto=True):
+    def __init__(self, sources, img_size=640, stride=32, stop=False, auto=True):
         self.mode = 'stream'
         self.img_size = img_size
         self.stride = stride
-
-        if os.path.isfile(sources):
-            with open(sources, 'r') as f:
-                sources = [x.strip() for x in f.read().strip().splitlines() if len(x.strip())]
-        else:
-            sources = [sources]
+        self.stop = stop
 
         n = len(sources)
         self.imgs, self.fps, self.frames, self.threads = [None] * n, [0] * n, [0] * n, [None] * n
@@ -324,6 +323,11 @@ class LoadStreams:
             print('WARNING: Different stream shapes detected. For optimal performance supply similarly-shaped streams.')
 
     def update(self, i, cap, stream):
+
+        # もしstopするべきならスレッドを停止する
+        if self.stop:
+            sys.exit()
+
         # Read stream `i` frames in daemon thread
         n, f, read = 0, self.frames[i], 1  # frame number, frame array, inference every 'read' frame
         while cap.isOpened() and n < f:
